@@ -32,31 +32,28 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- زر التحديث والمزامنة السحابية -->
-        <button onclick="refreshData(true)" id="refreshBtn" title="تحديث حقيقي ومزامنة من Drive"
+        <button onclick="refreshData(true)" id="refreshBtn" title="تحديث من السحابة"
           class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 py-1.5 rounded-lg text-sm font-medium transition active:scale-95">
           <span id="refreshIcon" class="inline-block transition-transform">🔄</span>
-          <span id="refreshLabel">مزامنة سحابية</span>
+          <span>تحديث ومزامنة</span>
         </button>
 
-        <!-- مؤشر المزامنة الحية -->
         <span id="connectionBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="connectionText">مزامنة سحابية نشطة</span>
+          <span id="connectionText">سحابي نشط</span>
         </span>
 
-        <!-- زر الإعدادات -->
-        <button onclick="openSettingsModal()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-sm transition" title="إعدادات الربط">
+        <button onclick="openSettingsModal()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-sm transition" title="إعدادات الرابط">
           ⚙️
         </button>
       </div>
     </div>
   </header>
 
-  <!-- تنبيه المزامنة اللحظية -->
+  <!-- تنبيه عائم -->
   <div id="syncToast" class="fixed bottom-4 left-4 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs flex items-center gap-2 transition-all opacity-0 pointer-events-none">
     <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-    <span id="syncToastMsg">جاري جلب آخر البيانات من Google Drive...</span>
+    <span id="syncToastMsg">جاري المزامنة...</span>
   </div>
 
   <!-- المحتوى الرئيسي -->
@@ -66,22 +63,15 @@
     <div id="groupsView">
       <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
         <div>
-          <h2 class="text-2xl font-bold text-slate-800">الأفواج التربوية (11 فوجاً)</h2>
-          <p class="text-xs text-slate-500 mt-1" id="lastUpdatedText">المزامنة مع السحابة: مباشرة</p>
-        </div>
-
-        <!-- تصفية المستويات -->
-        <div class="flex gap-1.5 bg-slate-200 p-1 rounded-xl text-xs font-bold">
-          <button onclick="filterGroups('all')" class="level-tab active px-3 py-1.5 rounded-lg bg-blue-600 text-white">الكل (11)</button>
-          <button onclick="filterGroups('1م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">1 متوسط</button>
-          <button onclick="filterGroups('2م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">2 متوسط</button>
-          <button onclick="filterGroups('3م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">3 متوسط</button>
-          <button onclick="filterGroups('4م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">4 متوسط</button>
+          <h2 class="text-2xl font-bold text-slate-800">الأفواج التربوية</h2>
+          <p class="text-xs text-slate-500 mt-1" id="lastUpdatedText">يتم توليد الأفواج تلقائياً حسب جدول Google Sheets</p>
         </div>
       </div>
 
-      <!-- شبكة الأفواج -->
-      <div id="groupsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+      <!-- شبكة الأفواج المولدة تلقائياً -->
+      <div id="groupsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- ستظهر هنا بطاقات 4م3، 4م4 وغيرها تلقائياً -->
+      </div>
     </div>
 
     <!-- الشاشة الثانية: قائمة تلاميذ الفوج -->
@@ -98,13 +88,12 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <input type="text" id="searchStudentInput" onkeyup="filterStudents()" placeholder="بحث سريع في الفوج..." 
-            class="border border-slate-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52">
+          <input type="text" id="searchStudentInput" onkeyup="filterStudents()" placeholder="بحث عن تلميذ..." 
+            class="border border-slate-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-48">
 
-          <!-- زر كشف المفتش -->
           <button onclick="openInspectorModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-1.5">
             <span>📄</span>
-            <span>كشف التقويم الرسمي (للمفتش)</span>
+            <span>كشف التقويم الرسمي</span>
           </button>
         </div>
       </div>
@@ -140,96 +129,89 @@
         </div>
         <div class="text-left">
           <div class="text-2xl font-black text-blue-600" id="modalTotalScore">0.00 / 20</div>
-          <span class="text-xs text-slate-400">مجموع التقويم المستمر</span>
+          <span class="text-xs text-slate-400">المجموع الحالي</span>
         </div>
       </div>
 
-      <!-- شبكة المعايير -->
+      <!-- شبكة المعايير الستة -->
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-        <!-- حضور (3) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
           <span class="text-xs font-bold text-slate-600">الحضور والمواظبة (3)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_presence">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('presence', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('presence', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('presence', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- انضباط (3) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
-          <span class="text-xs font-bold text-slate-600">السلوك والانضباط (3)</span>
+          <span class="text-xs font-bold text-slate-600">الانضباط والسلوك (3)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_discipline">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('discipline', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('discipline', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('discipline', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- كراس (3) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
-          <span class="text-xs font-bold text-slate-600">العناية بالكراس (3)</span>
+          <span class="text-xs font-bold text-slate-600">الكراس (3)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_notebook">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('notebook', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('notebook', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('notebook', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- واجبات (3) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
-          <span class="text-xs font-bold text-slate-600">الواجبات والأنشطة (3)</span>
+          <span class="text-xs font-bold text-slate-600">الواجبات (3)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_homework">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('homework', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('homework', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('homework', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- مشاريع (4) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
-          <span class="text-xs font-bold text-slate-600">المشاريع والبحوث (4)</span>
+          <span class="text-xs font-bold text-slate-600">المشاريع (4)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_projects">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('projects', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('projects', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('projects', +0.5, 4)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- استجواب (4) -->
         <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
-          <span class="text-xs font-bold text-slate-600">الاستجواب السريع (4)</span>
+          <span class="text-xs font-bold text-slate-600">الاستجواب (4)</span>
           <div class="text-2xl font-black text-slate-800 my-1" id="score_quizzes">0</div>
           <div class="flex justify-center gap-1.5">
-            <button onclick="adjustScore('quizzes', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('quizzes', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black hover:bg-slate-100">-</button>
             <button onclick="adjustScore('quizzes', +0.5, 4)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
       </div>
 
-      <!-- خانة الملاحظات -->
       <div class="mb-5">
-        <label class="block text-xs font-bold text-slate-600 mb-1">الملاحظة التوجيهية:</label>
-        <input type="text" id="modalStudentNotes" placeholder="مثال: تلميذ مجتهد ومنضبط..." 
+        <label class="block text-xs font-bold text-slate-600 mb-1">الملاحظة:</label>
+        <input type="text" id="modalStudentNotes" placeholder="تلميذ ممتاز، مواظب..." 
           class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
 
       <div class="flex justify-end gap-2">
         <button onclick="closeEvalModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-semibold">إلغاء</button>
-        <button id="saveBtnModal" onclick="saveStudentEvaluation()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md transition flex items-center gap-1.5">
-          <span>💾 حفظ ومزامنة</span>
+        <button id="saveBtnModal" onclick="saveStudentEvaluation()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md transition">
+          💾 حفظ ومزامنة
         </button>
       </div>
     </div>
   </div>
 
-  <!-- نافذة كشف التقويم الرسمي (للمفتش) -->
+  <!-- كشف المفتش الرسمي -->
   <div id="inspectorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
       <div class="flex justify-between items-center mb-6 no-print">
         <h3 class="text-lg font-bold text-slate-800">معاينة كشف التقويم الرسمي</h3>
         <div class="flex gap-2">
-          <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm">🖨️ طباعة الكشف (A4)</button>
+          <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm">🖨️ طباعة (A4)</button>
           <button onclick="closeInspectorModal()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600">إغلاق</button>
         </div>
       </div>
@@ -268,19 +250,14 @@
     </div>
   </div>
 
-  <!-- نافذة إعدادات الرابط -->
+  <!-- نافذة الإعدادات -->
   <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold text-slate-800 mb-2">⚙️ إعدادات ربط Google Drive</h3>
-      <p class="text-xs text-slate-500 mb-4">ألصق رابط Google Apps Script المنتهي بـ <code class="bg-slate-100 text-blue-600 px-1 py-0.5 rounded">/exec</code> للمزامنة المباشرة:</p>
+      <h3 class="text-lg font-bold text-slate-800 mb-2">⚙️ إعدادات رابط Google Drive</h3>
+      <p class="text-xs text-slate-500 mb-4">ألصق رابط Google Apps Script الخاص بك المنتهي بـ <code>/exec</code>:</p>
       
-      <div class="flex gap-2 mb-3">
-        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
-          class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-        <button onclick="pasteFromClipboard()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
-          📋 لصق
-        </button>
-      </div>
+      <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+        class="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 mb-4 focus:outline-none">
 
       <div class="flex justify-end gap-2">
         <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-semibold">إلغاء</button>
@@ -290,24 +267,9 @@
   </div>
 
   <script>
-    const defaultGroups = [
-      { id: "1م1", name: "1 متوسط 1", level: "1م", room: "قاعة 01" },
-      { id: "1م2", name: "1 متوسط 2", level: "1م", room: "قاعة 02" },
-      { id: "1م3", name: "1 متوسط 3", level: "1م", room: "قاعة 03" },
-      { id: "2م1", name: "2 متوسط 1", level: "2م", room: "قاعة 04" },
-      { id: "2م2", name: "2 متوسط 2", level: "2م", room: "قاعة 05" },
-      { id: "2م3", name: "2 متوسط 3", level: "2م", room: "قاعة 06" },
-      { id: "3م1", name: "3 متوسط 1", level: "3م", room: "قاعة 07" },
-      { id: "3م2", name: "3 متوسط 2", level: "3م", room: "قاعة 08" },
-      { id: "3م3", name: "3 متوسط 3", level: "3م", room: "قاعة 09" },
-      { id: "4م1", name: "4 متوسط 1", level: "4م", room: "قاعة 10" },
-      { id: "4م2", name: "4 متوسط 2", level: "4م", room: "قاعة 11" }
-    ];
-
-    let studentsData = JSON.parse(localStorage.getItem("studentsData_live")) || [];
+    let studentsData = JSON.parse(localStorage.getItem("studentsData_dynamic")) || [];
     let currentSelectedGroup = null;
     let currentStudent = null;
-    let currentFilterLevel = "all";
 
     function showToast(msg) {
       const toast = document.getElementById("syncToast");
@@ -317,140 +279,116 @@
       setTimeout(() => toast.classList.add("opacity-0", "pointer-events-none"), 3000);
     }
 
-    function sortStudentsAlphabetically(arr) {
-      return arr.sort((a, b) => {
-        const groupCmp = (a.group || "").localeCompare(b.group || "", 'ar');
-        if (groupCmp !== 0) return groupCmp;
-        return (a.name || "").localeCompare(b.name || "", 'ar');
-      });
-    }
-
-    // تهيئة التطبيق وجلب أحدث البيانات فوراً عند الفتح
     window.onload = async function() {
       const savedUrl = localStorage.getItem("googleScriptUrl");
       if (savedUrl) {
         document.getElementById("scriptUrlInput").value = savedUrl;
-        document.getElementById("connectionText").textContent = "متصل سحابياً بـ Drive";
-        await refreshData(false); // جلب البيانات الحية مباشرة من Google Sheets
+        await refreshData(false);
       } else {
-        renderGroups();
+        renderDynamicGroups();
       }
-
-      // مزامنة تلقائية هادئة في الخلفية كل 25 ثانية لجلب أي تعديل من هاتف/كمبيوتر آخر
-      setInterval(() => {
-        if (!document.getElementById("evalModal").classList.contains("hidden")) return; // عدم المقاطعة إذا كنت تعدل
-        refreshData(false, true);
-      }, 25000);
     };
 
-    // دالة الجلب والتحديث المباشر من Google Apps Script
-    async function refreshData(manual = true, silent = false) {
+    // جلب البيانات من Google Sheet تلقائياً
+    async function refreshData(showNotification = true) {
       const icon = document.getElementById("refreshIcon");
-      const lastText = document.getElementById("lastUpdatedText");
-      if (!silent) icon.classList.add("animate-spin-fast");
+      icon.classList.add("animate-spin-fast");
 
       const scriptUrl = localStorage.getItem("googleScriptUrl");
       if (scriptUrl) {
         try {
-          if (!silent && manual) showToast("جاري المزامنة مع Google Sheets...");
+          if (showNotification) showToast("جاري جلب البيانات من Google Drive...");
           const res = await fetch(scriptUrl, { cache: "no-store" });
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
-            studentsData = sortStudentsAlphabetically(data);
-            localStorage.setItem("studentsData_live", JSON.stringify(studentsData));
-            if (!silent && manual) showToast("✓ تمت المزامنة بنجاح بأحدث البيانات");
+            studentsData = data;
+            localStorage.setItem("studentsData_dynamic", JSON.stringify(studentsData));
+            if (showNotification) showToast("✓ تم تحديث البيانات بنجاح!");
           }
         } catch (e) {
-          console.warn("تنبيه مزامنة:", e);
+          console.warn("خطأ في الاتصال بالرابط:", e);
         }
       }
 
-      if (!silent) icon.classList.remove("animate-spin-fast");
-      const now = new Date();
-      lastText.textContent = `آخر مزامنة سحابية: ${now.toLocaleTimeString('ar-DZ')}`;
-      renderGroups();
+      icon.classList.remove("animate-spin-fast");
+      renderDynamicGroups();
       if (currentSelectedGroup) renderStudentsList(currentSelectedGroup);
     }
 
-    function renderGroups() {
+    // توليد بطاقات الأفواج تلقائياً حسب الموجود في الجدول (4م3، 4م4، إلخ)
+    function renderDynamicGroups() {
       const grid = document.getElementById("groupsGrid");
       grid.innerHTML = "";
 
-      const filtered = currentFilterLevel === "all" 
-        ? defaultGroups 
-        : defaultGroups.filter(g => g.level === currentFilterLevel);
+      // استخراج الأفواج الفريدة من البيانات
+      const uniqueGroups = [...new Set(studentsData.map(s => s.group))].filter(Boolean);
 
-      filtered.forEach(g => {
-        const groupStudents = studentsData.filter(s => s.group === g.id);
+      if (uniqueGroups.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+            <p class="text-slate-500 font-semibold mb-2">لم يتم العثور على أي أفواج بعد.</p>
+            <p class="text-xs text-slate-400">تأكد من إدخال الرابط في خانة الإعدادات ⚙️ والضغط على "تحديث ومزامنة".</p>
+          </div>
+        `;
+        return;
+      }
+
+      uniqueGroups.forEach(grpName => {
+        const groupStudents = studentsData.filter(s => s.group === grpName);
         const count = groupStudents.length;
         const avg = count > 0 
-          ? (groupStudents.reduce((a, b) => a + (b.total || 0), 0) / count).toFixed(2)
+          ? (groupStudents.reduce((a, b) => a + (parseFloat(b.total) || 0), 0) / count).toFixed(2)
           : "0.00";
 
         grid.innerHTML += `
-          <div onclick="selectGroup('${g.id}', '${g.name}')" 
-            class="bg-white hover:border-blue-500 hover:shadow-md cursor-pointer border border-slate-200 rounded-2xl p-4 transition-all">
-            <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 rounded-lg">${g.room}</span>
-              <span class="text-xs text-slate-400 font-semibold">${count} تلميذ</span>
+          <div onclick="selectGroup('${grpName}')" 
+            class="bg-white hover:border-blue-500 hover:shadow-md cursor-pointer border border-slate-200 rounded-2xl p-5 transition-all">
+            <div class="flex justify-between items-start mb-3">
+              <span class="text-xs font-bold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg">فوج تربوي</span>
+              <span class="text-xs text-slate-500 font-bold">${count} تلميذ</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800">${g.name}</h3>
+            <h3 class="text-xl font-black text-slate-800">${grpName}</h3>
             <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
               <span class="text-slate-500">معدل الفوج:</span>
-              <span class="font-bold text-blue-600">${avg} / 20</span>
+              <span class="font-bold text-blue-600 text-sm">${avg} / 20</span>
             </div>
           </div>
         `;
       });
     }
 
-    function selectGroup(groupId, groupName) {
-      currentSelectedGroup = groupId;
+    function selectGroup(grpName) {
+      currentSelectedGroup = grpName;
       document.getElementById("groupsView").classList.add("hidden");
       document.getElementById("studentsView").classList.remove("hidden");
-      document.getElementById("currentGroupName").textContent = `قائمة: ${groupName}`;
-      renderStudentsList(groupId);
+      document.getElementById("currentGroupName").textContent = `قائمة: ${grpName}`;
+      renderStudentsList(grpName);
     }
 
     function showGroupsView() {
       document.getElementById("studentsView").classList.add("hidden");
       document.getElementById("groupsView").classList.remove("hidden");
-      renderGroups();
+      renderDynamicGroups();
     }
 
-    function filterGroups(level) {
-      currentFilterLevel = level;
-      document.querySelectorAll(".level-tab").forEach(tab => {
-        tab.classList.remove("bg-blue-600", "text-white");
-        tab.classList.add("text-slate-700");
-      });
-      event.target.classList.add("bg-blue-600", "text-white");
-      event.target.classList.remove("text-slate-700");
-      renderGroups();
-    }
-
-    function renderStudentsList(groupId) {
+    function renderStudentsList(grpName) {
       const tbody = document.getElementById("studentsTableBody");
       tbody.innerHTML = "";
       
       const students = studentsData
-        .filter(s => s.group === groupId)
+        .filter(s => s.group === grpName)
         .sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ar'));
 
       document.getElementById("groupStudentCount").textContent = `عدد التلاميذ: ${students.length} (مرتبون أبجدياً)`;
 
-      if (students.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">لا يوجد تلاميذ مسجلين بهذا الفوج. تأكد من مزامنة Google Sheets.</td></tr>`;
-        return;
-      }
-
       students.forEach((st, idx) => {
         let tagColor = "bg-amber-50 text-amber-700 border-amber-200";
         let tagText = "متوسط";
-        if (st.total >= 16) { tagColor = "bg-emerald-50 text-emerald-700 border-emerald-200"; tagText = "ممتاز"; }
-        else if (st.total >= 14) { tagColor = "bg-blue-50 text-blue-700 border-blue-200"; tagText = "جيد جداً"; }
-        else if (st.total >= 10) { tagColor = "bg-teal-50 text-teal-700 border-teal-200"; tagText = "مقبول"; }
-        else if (st.total > 0) { tagColor = "bg-rose-50 text-rose-700 border-rose-200"; tagText = "دون المتوسط"; }
+        const tot = parseFloat(st.total) || 0;
+        if (tot >= 16) { tagColor = "bg-emerald-50 text-emerald-700 border-emerald-200"; tagText = "ممتاز"; }
+        else if (tot >= 14) { tagColor = "bg-blue-50 text-blue-700 border-blue-200"; tagText = "جيد جداً"; }
+        else if (tot >= 10) { tagColor = "bg-teal-50 text-teal-700 border-teal-200"; tagText = "مقبول"; }
+        else if (tot > 0) { tagColor = "bg-rose-50 text-rose-700 border-rose-200"; tagText = "دون المتوسط"; }
 
         const serialNum = String(idx + 1).padStart(2, '0');
 
@@ -458,13 +396,13 @@
           <tr class="hover:bg-slate-50 transition">
             <td class="p-3 text-center font-bold text-slate-500">${serialNum}</td>
             <td class="p-3 font-bold text-slate-800">${st.name}</td>
-            <td class="p-3 text-center font-black text-blue-600">${(st.total || 0).toFixed(2)}</td>
+            <td class="p-3 text-center font-black text-blue-600">${tot.toFixed(2)}</td>
             <td class="p-3 text-center">
               <span class="text-xs px-2.5 py-1 rounded-full border ${tagColor} font-semibold">${tagText}</span>
             </td>
             <td class="p-3 text-center text-xs text-slate-500">${st.note || '-'}</td>
             <td class="p-3 text-center">
-              <button onclick="openEvalModal('${st.group}', '${st.id}')" 
+              <button onclick="openEvalModal('${st.group}', '${st.id}', '${st.name}')" 
                 class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition">
                 ✏️ تقييم
               </button>
@@ -474,12 +412,12 @@
       });
     }
 
-    function openEvalModal(group, id) {
-      currentStudent = studentsData.find(s => s.group === group && s.id === id);
+    function openEvalModal(group, id, name) {
+      currentStudent = studentsData.find(s => s.group === group && (s.id == id || s.name === name));
       if (!currentStudent) return;
 
       document.getElementById("modalStudentName").textContent = currentStudent.name;
-      document.getElementById("modalStudentGroup").textContent = `الفوج: ${currentStudent.group} | الرقم: ${currentStudent.id}`;
+      document.getElementById("modalStudentGroup").textContent = `الفوج: ${currentStudent.group}`;
       document.getElementById("modalStudentNotes").value = currentStudent.note || "";
 
       ['presence', 'discipline', 'notebook', 'homework', 'projects', 'quizzes'].forEach(field => {
@@ -512,13 +450,12 @@
       return total;
     }
 
-    // حفظ فوري في Google Sheet والمزامنة اللحظية
     async function saveStudentEvaluation() {
       if (!currentStudent) return;
 
       const saveBtn = document.getElementById("saveBtnModal");
       saveBtn.disabled = true;
-      saveBtn.innerHTML = `<span>⏳ جاري الحفظ في Drive...</span>`;
+      saveBtn.innerHTML = `<span>⏳ جاري الحفظ...</span>`;
 
       currentStudent.presence = parseFloat(document.getElementById("score_presence").textContent) || 0;
       currentStudent.discipline = parseFloat(document.getElementById("score_discipline").textContent) || 0;
@@ -529,20 +466,20 @@
       currentStudent.total = calculateModalTotal();
       currentStudent.note = document.getElementById("modalStudentNotes").value;
 
-      localStorage.setItem("studentsData_live", JSON.stringify(studentsData));
+      localStorage.setItem("studentsData_dynamic", JSON.stringify(studentsData));
 
       const scriptUrl = localStorage.getItem("googleScriptUrl");
       if (scriptUrl) {
         try {
           await fetch(scriptUrl, {
             method: "POST",
-            mode: "no-cors", // إرسال صامت فوري بدون تعليق
+            mode: "no-cors",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(currentStudent)
           });
-          showToast("✓ تم الحفظ في Google Sheet وتحديث السحابة");
-        } catch (err) {
-          console.log("حفظ محلي مؤقت");
+          showToast("✓ تم الحفظ في Google Sheets بنجاح");
+        } catch (e) {
+          console.warn("حفظ محلي");
         }
       }
 
@@ -563,10 +500,11 @@
 
       groupStudents.forEach((st, idx) => {
         let tag = "متوسط";
-        if (st.total >= 16) tag = "ممتاز";
-        else if (st.total >= 14) tag = "جيد جداً";
-        else if (st.total >= 10) tag = "مقبول";
-        else if (st.total > 0) tag = "دون المتوسط";
+        const tot = parseFloat(st.total) || 0;
+        if (tot >= 16) tag = "ممتاز";
+        else if (tot >= 14) tag = "جيد جداً";
+        else if (tot >= 10) tag = "مقبول";
+        else if (tot > 0) tag = "دون المتوسط";
 
         const serialNum = String(idx + 1).padStart(2, '0');
 
@@ -574,7 +512,7 @@
           <tr>
             <td class="border border-slate-300 p-2 font-bold">${serialNum}</td>
             <td class="border border-slate-300 p-2 text-right font-bold">${st.name}</td>
-            <td class="border border-slate-300 p-2 font-black text-blue-700">${(st.total || 0).toFixed(2)}</td>
+            <td class="border border-slate-300 p-2 font-black text-blue-700">${tot.toFixed(2)}</td>
             <td class="border border-slate-300 p-2 font-semibold">${tag}</td>
             <td class="border border-slate-300 p-2 text-slate-600">${st.note || '-'}</td>
           </tr>
@@ -595,15 +533,6 @@
       localStorage.setItem("googleScriptUrl", url);
       closeSettingsModal();
       refreshData(true);
-    }
-
-    async function pasteFromClipboard() {
-      try {
-        const text = await navigator.clipboard.readText();
-        document.getElementById("scriptUrlInput").value = text;
-      } catch (err) {
-        alert("يرجى لصق الرابط يدوياً");
-      }
     }
   </script>
 </body>
