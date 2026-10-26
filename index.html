@@ -11,7 +11,7 @@
     @media print {
       body * { visibility: hidden; }
       #printableArea, #printableArea * { visibility: visible; }
-      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
       .no-print { display: none !important; }
     }
     .animate-spin-fast { animation: spin 0.7s linear infinite; }
@@ -68,9 +68,8 @@
         </div>
       </div>
 
-      <!-- شبكة الأفواج المولدة تلقائياً -->
       <div id="groupsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- ستظهر هنا بطاقات 4م3، 4م4 وغيرها تلقائياً -->
+        <!-- تتولد بطاقات الأفواج ديناميكياً -->
       </div>
     </div>
 
@@ -107,7 +106,6 @@
                 <th class="p-3 w-16 text-center">الرقم</th>
                 <th class="p-3">اللقب والاسم (أبجدياً)</th>
                 <th class="p-3 text-center">المعدل الإجمالي (/20)</th>
-                <th class="p-3 text-center">التقدير</th>
                 <th class="p-3 text-center">الملاحظة</th>
                 <th class="p-3 text-center">إجراءات</th>
               </tr>
@@ -205,7 +203,7 @@
     </div>
   </div>
 
-  <!-- كشف المفتش الرسمي -->
+  <!-- كشف المفتش الرسمي (تم ضبط المؤسسة وإزالة التقدير) -->
   <div id="inspectorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
       <div class="flex justify-between items-center mb-6 no-print">
@@ -217,30 +215,37 @@
       </div>
 
       <div id="printableArea" class="border border-slate-300 p-8 rounded-xl bg-white text-slate-900">
+        <!-- الترويسة الرسمية مع ضبط خانات المؤسسة والولاية والسنة -->
         <div class="text-center pb-4 mb-4 border-b-2 border-slate-800">
           <h4 class="text-sm font-bold">الجمهورية الجزائرية الديمقراطية الشعبية</h4>
           <h5 class="text-xs text-slate-600">وزارة التربية الوطنية</h5>
-          <h3 class="text-xl font-black mt-2">كشف نقاط التقويم المستمر الرسمي</h3>
-          <div class="flex justify-between text-xs font-semibold mt-4 px-2 text-slate-700">
+          <div class="flex justify-between text-xs font-semibold mt-2 px-2 text-slate-700">
+            <span>مديرية التربية لولاية: ..............................</span>
+            <span>المؤسسة: .................................................</span>
+          </div>
+          <h3 class="text-xl font-black mt-3">كشف نقاط التقويم المستمر الرسمي</h3>
+          <div class="flex justify-between text-xs font-semibold mt-3 px-2 text-slate-700">
             <span>الأستاذ: <strong>حواش زكرياء</strong></span>
+            <span>المادة: <strong>العلوم الفيزيائية والتكنولوجيا</strong></span>
             <span id="reportGroupTitle" class="font-bold text-blue-700">الفوج: --</span>
             <span>الموسم الدراسي: 20... / 20...</span>
           </div>
         </div>
 
+        <!-- جدول الكشف بدون عمود التقدير (فقط الرقم، الاسم، العلامة، الملاحظة) -->
         <table class="w-full text-center border-collapse border border-slate-300 text-xs mb-6">
           <thead class="bg-slate-100 font-bold">
             <tr>
               <th class="border border-slate-300 p-2 w-12">الرقم</th>
               <th class="border border-slate-300 p-2 text-right">اللقب والاسم (مرتّب أبجدياً)</th>
-              <th class="border border-slate-300 p-2 w-28">علامة التقويم (/20)</th>
-              <th class="border border-slate-300 p-2 w-28">التقدير التربوي</th>
+              <th class="border border-slate-300 p-2 w-32">علامة التقويم (/20)</th>
               <th class="border border-slate-300 p-2">الملاحظة والتوجيه</th>
             </tr>
           </thead>
           <tbody id="reportTableBody"></tbody>
         </table>
 
+        <!-- خانات الإمضاءات الرسمية والتأشيرة -->
         <div class="grid grid-cols-3 text-center text-xs font-bold pt-8 mt-6 border-t border-slate-200">
           <div>توقيع الأستاذ:<br><span class="font-medium text-slate-600 mt-2 block">حواش زكرياء</span></div>
           <div>ختم وتأشيرة الإدارة:<br><span class="font-medium text-slate-400 mt-2 block">(..................)</span></div>
@@ -289,7 +294,6 @@
       }
     };
 
-    // جلب البيانات من Google Sheet تلقائياً
     async function refreshData(showNotification = true) {
       const icon = document.getElementById("refreshIcon");
       icon.classList.add("animate-spin-fast");
@@ -315,12 +319,10 @@
       if (currentSelectedGroup) renderStudentsList(currentSelectedGroup);
     }
 
-    // توليد بطاقات الأفواج تلقائياً حسب الموجود في الجدول (4م3، 4م4، إلخ)
     function renderDynamicGroups() {
       const grid = document.getElementById("groupsGrid");
       grid.innerHTML = "";
 
-      // استخراج الأفواج الفريدة من البيانات
       const uniqueGroups = [...new Set(studentsData.map(s => s.group))].filter(Boolean);
 
       if (uniqueGroups.length === 0) {
@@ -382,14 +384,7 @@
       document.getElementById("groupStudentCount").textContent = `عدد التلاميذ: ${students.length} (مرتبون أبجدياً)`;
 
       students.forEach((st, idx) => {
-        let tagColor = "bg-amber-50 text-amber-700 border-amber-200";
-        let tagText = "متوسط";
         const tot = parseFloat(st.total) || 0;
-        if (tot >= 16) { tagColor = "bg-emerald-50 text-emerald-700 border-emerald-200"; tagText = "ممتاز"; }
-        else if (tot >= 14) { tagColor = "bg-blue-50 text-blue-700 border-blue-200"; tagText = "جيد جداً"; }
-        else if (tot >= 10) { tagColor = "bg-teal-50 text-teal-700 border-teal-200"; tagText = "مقبول"; }
-        else if (tot > 0) { tagColor = "bg-rose-50 text-rose-700 border-rose-200"; tagText = "دون المتوسط"; }
-
         const serialNum = String(idx + 1).padStart(2, '0');
 
         tbody.innerHTML += `
@@ -397,10 +392,7 @@
             <td class="p-3 text-center font-bold text-slate-500">${serialNum}</td>
             <td class="p-3 font-bold text-slate-800">${st.name}</td>
             <td class="p-3 text-center font-black text-blue-600">${tot.toFixed(2)}</td>
-            <td class="p-3 text-center">
-              <span class="text-xs px-2.5 py-1 rounded-full border ${tagColor} font-semibold">${tagText}</span>
-            </td>
-            <td class="p-3 text-center text-xs text-slate-500">${st.note || '-'}</td>
+            <td class="p-3 text-center text-xs text-slate-600 font-medium">${st.note || '-'}</td>
             <td class="p-3 text-center">
               <button onclick="openEvalModal('${st.group}', '${st.id}', '${st.name}')" 
                 class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition">
@@ -499,13 +491,7 @@
       tbody.innerHTML = "";
 
       groupStudents.forEach((st, idx) => {
-        let tag = "متوسط";
         const tot = parseFloat(st.total) || 0;
-        if (tot >= 16) tag = "ممتاز";
-        else if (tot >= 14) tag = "جيد جداً";
-        else if (tot >= 10) tag = "مقبول";
-        else if (tot > 0) tag = "دون المتوسط";
-
         const serialNum = String(idx + 1).padStart(2, '0');
 
         tbody.innerHTML += `
@@ -513,8 +499,7 @@
             <td class="border border-slate-300 p-2 font-bold">${serialNum}</td>
             <td class="border border-slate-300 p-2 text-right font-bold">${st.name}</td>
             <td class="border border-slate-300 p-2 font-black text-blue-700">${tot.toFixed(2)}</td>
-            <td class="border border-slate-300 p-2 font-semibold">${tag}</td>
-            <td class="border border-slate-300 p-2 text-slate-600">${st.note || '-'}</td>
+            <td class="border border-slate-300 p-2 text-slate-700">${st.note || '-'}</td>
           </tr>
         `;
       });
