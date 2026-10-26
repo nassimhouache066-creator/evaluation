@@ -5,1601 +5,606 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>منصة التقويم المستمر - الأستاذ حواش زكرياء</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Cairo', sans-serif; }
-    .fade-in {
-      animation: fadeIn 0.25s ease-out forwards;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    body { font-family: 'Tajawal', sans-serif; }
     @media print {
-      body * { visibility: hidden !important; }
-      #inspectorReportModal, #inspectorReportModal * { visibility: visible !important; }
-      #inspectorReportModal {
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 100% !important;
-        background: white !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
       .no-print { display: none !important; }
     }
-    .animate-spin-fast {
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+    .animate-spin-fast { animation: spin 0.7s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-  <!-- شريط الرأس الرئيسي -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+  <!-- شريط الرأس -->
+  <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-indigo-100">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-        </div>
+        <div class="bg-white/10 p-2 rounded-xl text-2xl">📊</div>
         <div>
-          <h1 class="font-extrabold text-base sm:text-lg text-slate-900 leading-tight">منصة التقويم المستمر</h1>
-          <span class="text-xs text-slate-500 font-medium">قاعدة البيانات: Google Drive (مرتّبة أبجدياً)</span>
+          <h1 class="text-xl font-bold">منصة التقويم المستمر</h1>
+          <p class="text-xs text-blue-100">الأستاذ: حواش زكرياء | العلوم الفيزيائية والتكنولوجيا</p>
         </div>
       </div>
 
-      <!-- معلومات الأستاذ وأزرار التحكم -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- زر المزامنة والتحديث الفوري -->
-        <button onclick="refreshData()" id="refreshBtn" title="تحديث البيانات من Google Drive"
-          class="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition">
-          <span id="refreshIcon" class="inline-block text-sm">🔄</span>
-          <span class="hidden sm:inline">تحديث</span>
+      <div class="flex items-center gap-2">
+        <!-- زر التحديث والمزامنة السحابية -->
+        <button onclick="refreshData(true)" id="refreshBtn" title="تحديث حقيقي ومزامنة من Drive"
+          class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 px-3 py-1.5 rounded-lg text-sm font-medium transition active:scale-95">
+          <span id="refreshIcon" class="inline-block transition-transform">🔄</span>
+          <span id="refreshLabel">مزامنة سحابية</span>
         </button>
 
-        <button onclick="openConfigModal()" class="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-xl border border-indigo-200 text-xs font-bold transition">
-          <span>⚙️ إعدادات الربط</span>
+        <!-- مؤشر المزامنة الحية -->
+        <span id="connectionBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="connectionText">مزامنة سحابية نشطة</span>
+        </span>
+
+        <!-- زر الإعدادات -->
+        <button onclick="openSettingsModal()" class="bg-white/10 hover:bg-white/20 p-2 rounded-lg text-sm transition" title="إعدادات الربط">
+          ⚙️
         </button>
-
-        <div id="driveStatusBadge" class="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-100">
-          <span id="statusPulse" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="statusText">متصل بـ Drive</span>
-        </div>
-
-        <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
-          <span>الأستاذ: حواش زكرياء</span>
-        </div>
       </div>
     </div>
   </header>
 
-  <!-- مسار التنقل التفاعلي (Breadcrumb) -->
-  <div class="bg-white border-b border-slate-200/80">
-    <div class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 font-semibold overflow-x-auto">
-      <div class="flex items-center gap-2">
-        <button onclick="goToStep(1)" class="hover:text-indigo-600 flex items-center gap-1 transition">
-          <span>🏫 قائمة الأفواج</span>
-        </button>
-        <span id="breadcrumb-sep" class="hidden text-slate-300">/</span>
-        <span id="breadcrumb-group" class="hidden text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded-md"></span>
-      </div>
-      <span id="lastUpdatedHeader" class="text-[11px] text-slate-400 font-medium">الترتيب: أبجدي آلياً</span>
-    </div>
+  <!-- تنبيه المزامنة اللحظية -->
+  <div id="syncToast" class="fixed bottom-4 left-4 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs flex items-center gap-2 transition-all opacity-0 pointer-events-none">
+    <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
+    <span id="syncToastMsg">جاري جلب آخر البيانات من Google Drive...</span>
   </div>
 
-  <!-- الحاوية الأساسية للتطبيق -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+  <!-- المحتوى الرئيسي -->
+  <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- ============================================== -->
-    <!-- المرحلة 1: شاشة اختيار الفوج التربوي (11 فوجاً) -->
-    <!-- ============================================== -->
-    <section id="step-groups" class="fade-in space-y-6">
-      <div class="text-center max-w-xl mx-auto space-y-2">
-        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
-          الخطوة 1 من 2
-        </span>
-        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">اختر الفوج التربوي</h2>
-        <p class="text-xs sm:text-sm text-slate-500">اختر القسم لمتابعة وتدوين نقاط التقويم المستمر لتلاميذ الفوج (إجمالي 11 فوجاً).</p>
-      </div>
-
-      <!-- أزرار الفلترة حسب المستوى والبحث السريع للأفواج -->
-      <div class="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-1.5 text-xs font-bold" id="levelFilterButtons">
-          <button onclick="filterGroupsByLevel('all')" id="btn-lvl-all" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white transition shadow-sm">الكل (11)</button>
-          <button onclick="filterGroupsByLevel('1م')" id="btn-lvl-1" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition">1 متوسط</button>
-          <button onclick="filterGroupsByLevel('2م')" id="btn-lvl-2" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition">2 متوسط</button>
-          <button onclick="filterGroupsByLevel('3م')" id="btn-lvl-3" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition">3 متوسط</button>
-          <button onclick="filterGroupsByLevel('4م')" id="btn-lvl-4" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition">4 متوسط</button>
+    <!-- الشاشة الأولى: اختيار الفوج -->
+    <div id="groupsView">
+      <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">الأفواج التربوية (11 فوجاً)</h2>
+          <p class="text-xs text-slate-500 mt-1" id="lastUpdatedText">المزامنة مع السحابة: مباشرة</p>
         </div>
 
-        <div class="w-full sm:w-64">
-          <input type="text" id="groupSearchInput" oninput="filterGroupsSearch(this.value)" placeholder="بحث عن فوج أو قاعة..." 
-            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 focus:outline-none transition">
+        <!-- تصفية المستويات -->
+        <div class="flex gap-1.5 bg-slate-200 p-1 rounded-xl text-xs font-bold">
+          <button onclick="filterGroups('all')" class="level-tab active px-3 py-1.5 rounded-lg bg-blue-600 text-white">الكل (11)</button>
+          <button onclick="filterGroups('1م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">1 متوسط</button>
+          <button onclick="filterGroups('2م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">2 متوسط</button>
+          <button onclick="filterGroups('3م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">3 متوسط</button>
+          <button onclick="filterGroups('4م')" class="level-tab px-3 py-1.5 rounded-lg hover:bg-white/50 text-slate-700">4 متوسط</button>
         </div>
       </div>
 
-      <!-- شبكة بطاقات الـ 11 فوج -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2" id="groupsContainer">
-        <!-- توليد بطاقات الأفواج برمجياً -->
-      </div>
-    </section>
+      <!-- شبكة الأفواج -->
+      <div id="groupsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    </div>
 
-    <!-- ============================================== -->
-    <!-- المرحلة 2: القائمة الاسمية لطلبة الفوج المختار -->
-    <!-- ============================================== -->
-    <section id="step-students" class="hidden fade-in space-y-5">
-      <!-- شريط العنوان والتحكم -->
-      <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+    <!-- الشاشة الثانية: قائمة تلاميذ الفوج -->
+    <div id="studentsView" class="hidden">
+      <div class="flex flex-wrap justify-between items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6">
         <div class="flex items-center gap-3">
-          <button onclick="goToStep(1)" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold transition text-sm" title="رجوع للأفواج">
-            ←
+          <button onclick="showGroupsView()" class="bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-xl text-slate-700 font-bold text-sm transition">
+            ⬅️ عودة للأفواج
           </button>
           <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-lg sm:text-xl font-black text-slate-900" id="currentGroupTitle">فوج 01</h2>
-              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100" id="currentGroupCount">0 تلميذ</span>
-            </div>
-            <p class="text-xs text-slate-500">القائمة مرتّبة تلقائياً حسب الترتيب الأبجدي للاسم واللقب</p>
+            <h2 id="currentGroupName" class="text-xl font-bold text-slate-800">قائمة الفوج</h2>
+            <p id="groupStudentCount" class="text-xs text-slate-500">القائمة مرتبة أبجدياً</p>
           </div>
         </div>
 
-        <!-- إحصائيات سريعة وزر كشف المفتش -->
-        <div class="flex flex-wrap items-center gap-3">
-          <button onclick="openInspectorReport()" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition active:scale-95">
-            <span>📄 كشف التقويم الرسمي (للمفتش)</span>
-          </button>
-
-          <div class="flex items-center gap-2 text-xs font-semibold">
-            <div class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-center">
-              <span class="text-slate-400 block text-[10px]">معدل الفوج</span>
-              <span class="text-sm font-black text-indigo-700" id="groupAvgBadge">0.00</span>
-            </div>
-            <div class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-center">
-              <span class="text-slate-400 block text-[10px]">نسبة النجاح</span>
-              <span class="text-sm font-black text-emerald-600" id="groupPassBadge">0%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- شريط الإجراءات والتقييم الجماعي عند تحديد تلاميذ -->
-      <div id="bulkActionBar" class="hidden bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-3.5 rounded-2xl shadow-lg border border-indigo-700/40 flex flex-wrap items-center justify-between gap-3 animate-pulse-once">
-        <div class="flex items-center gap-3">
-          <span class="w-8 h-8 rounded-xl bg-indigo-500/30 border border-indigo-400/40 flex items-center justify-center text-sm font-black text-indigo-300">👥</span>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-slate-300">التلاميذ المحددون للتقييم الجماعي:</span>
-              <span id="selectedCountBadge" class="bg-indigo-500 text-white font-black text-xs px-2.5 py-0.5 rounded-full">0</span>
-            </div>
-            <p class="text-[11px] text-slate-400">يمكنك زيادة أو إنقاص نقاط المعايير لهم معاً بضغطة زر واحدة</p>
-          </div>
-        </div>
         <div class="flex items-center gap-2">
-          <button onclick="openBulkModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md transition active:scale-95 flex items-center gap-1.5">
-            <span>⚡ تقييم جماعي للمحددين</span>
-          </button>
-          <button onclick="deselectAllStudents()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
-            إلغاء التحديد
+          <input type="text" id="searchStudentInput" onkeyup="filterStudents()" placeholder="بحث سريع في الفوج..." 
+            class="border border-slate-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-52">
+
+          <!-- زر كشف المفتش -->
+          <button onclick="openInspectorModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-sm font-semibold shadow-sm transition flex items-center gap-1.5">
+            <span>📄</span>
+            <span>كشف التقويم الرسمي (للمفتش)</span>
           </button>
         </div>
       </div>
 
-      <!-- شريط البحث السريع في الفوج وأزرار التحديد -->
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="relative flex-1">
-          <input type="text" id="studentSearchInput" oninput="filterStudents(this.value)" placeholder="بحث سريع عن تلميذ بالاسم أو الرقم..." 
-            class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition">
-          <span class="absolute right-3.5 top-3 text-slate-400">🔍</span>
-        </div>
-        <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1.5 shadow-sm text-xs font-bold text-slate-700">
-          <button onclick="selectAllStudents(true)" class="px-2.5 py-1.5 hover:bg-slate-100 rounded-lg transition text-indigo-600">✓ تحديد الكل</button>
-          <span class="text-slate-300">|</span>
-          <button onclick="selectAllStudents(false)" class="px-2.5 py-1.5 hover:bg-slate-100 rounded-lg transition text-slate-500">إلغاء الكل</button>
-        </div>
-      </div>
-
-      <!-- جدول القائمة الاسمية -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <!-- جدول التلاميذ -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-right text-xs sm:text-sm">
-            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 text-xs font-bold">
+          <table class="w-full text-right text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-xs">
               <tr>
-                <th class="p-3.5 w-12 text-center">
-                  <input type="checkbox" id="headerCheckbox" onchange="toggleSelectAllFromHeader(this.checked)" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-                </th>
-                <th class="p-3.5 w-14 text-center">الرقم</th>
-                <th class="p-3.5">اللقب والاسم (أبجدياً)</th>
-                <th class="p-3.5 text-center hidden md:table-cell">حالة المتابعة</th>
-                <th class="p-3.5 text-center w-28">معدل التقويم</th>
-                <th class="p-3.5 text-center w-36">الإجراء</th>
+                <th class="p-3 w-16 text-center">الرقم</th>
+                <th class="p-3">اللقب والاسم (أبجدياً)</th>
+                <th class="p-3 text-center">المعدل الإجمالي (/20)</th>
+                <th class="p-3 text-center">التقدير</th>
+                <th class="p-3 text-center">الملاحظة</th>
+                <th class="p-3 text-center">إجراءات</th>
               </tr>
             </thead>
-            <tbody id="studentsTableBody" class="divide-y divide-slate-100">
-              <!-- صفوف التلاميذ -->
-            </tbody>
+            <tbody id="studentsTableBody" class="divide-y divide-slate-100"></tbody>
           </table>
         </div>
-        <div id="noStudentsMsg" class="hidden text-center py-12 text-slate-400 text-xs sm:text-sm">
-          لا يوجد تلاميذ يطابقون بحثك.
-        </div>
       </div>
-    </section>
-
+    </div>
   </main>
 
-  <!-- ============================================== -->
-  <!-- المرحلة 3: نافذة التنقيط المخصصة للتلميذ (Modal) -->
-  <!-- ============================================== -->
-  <div id="studentModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in flex flex-col max-h-[92vh]">
-      
-      <!-- رأس نافذة التلميذ -->
-      <div class="bg-slate-900 text-white p-4 sm:p-5 flex justify-between items-start">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-xs px-2.5 py-0.5 rounded-full font-bold" id="modalStudentNumber">
-              رقم 01
-            </span>
-            <span class="text-xs text-slate-300" id="modalStudentGroup">فوج 01</span>
-          </div>
-          <h3 class="text-lg sm:text-xl font-black text-white" id="modalStudentName">اسم التلميذ</h3>
-          <p class="text-[11px] sm:text-xs text-slate-400">تحكم بالنقاط بسهولة بواسطة أزرار (+) و (-) لكل معيار</p>
-        </div>
-        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold transition text-sm">
-          ✕
-        </button>
-      </div>
-
-      <!-- شريط المجموع اللحظي -->
-      <div class="bg-indigo-50/70 border-b border-indigo-100 px-5 py-3 flex items-center justify-between">
+  <!-- نافذة التقييم الفردي -->
+  <div id="evalModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
         <div>
-          <span class="text-xs font-bold text-slate-700 block">معدل التقويم المستمر الإجمالي</span>
-          <span class="text-[10px] text-slate-500">يُحسب آلياً من 20 نقطة</span>
+          <h3 id="modalStudentName" class="text-lg font-bold text-slate-800">تقييم التلميذ</h3>
+          <p id="modalStudentGroup" class="text-xs text-slate-500">الفوج</p>
         </div>
-        <div class="flex items-baseline gap-1 bg-white px-3.5 py-1 rounded-xl border border-indigo-100 shadow-sm">
-          <span class="text-2xl font-black" id="modalTotalScore">15.00</span>
-          <span class="text-slate-400 font-extrabold text-xs">/ 20</span>
+        <div class="text-left">
+          <div class="text-2xl font-black text-blue-600" id="modalTotalScore">0.00 / 20</div>
+          <span class="text-xs text-slate-400">مجموع التقويم المستمر</span>
         </div>
       </div>
 
-      <!-- جسم النافذة: معايير التقييم الستة مرتبة جنباً إلى جنب كألواح شبكية -->
-      <div class="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
-        
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3" id="criteriaGrid">
-          <!-- 1. الحضور والمواظبة -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الحضور والمواظبة</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 3</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-presence">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 3</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('presence', -0.5, 3)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('presence', +0.5, 3)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
-          </div>
-
-          <!-- 2. السلوك والانضباط -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">السلوك والانضباط</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 3</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-discipline">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 3</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('discipline', -0.5, 3)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('discipline', +0.5, 3)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
-          </div>
-
-          <!-- 3. العناية بالكراس -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">العناية بالكراس</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 3</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-notebook">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 3</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('notebook', -0.5, 3)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('notebook', +0.5, 3)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
-          </div>
-
-          <!-- 4. الواجبات والتمارين -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الواجبات والتمارين</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 3</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-homework">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 3</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('homework', -0.5, 3)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('homework', +0.5, 3)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
-          </div>
-
-          <!-- 5. المشاريع والبحوث -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">المشاريع والبحوث</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 4</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-projects">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 4</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('projects', -0.5, 4)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('projects', +0.5, 4)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
-          </div>
-
-          <!-- 6. الاستجواب السريع -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center transition hover:border-indigo-300">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الاستجواب السريع</span>
-              <span class="text-[10px] text-slate-400 font-semibold">أقصى حد: 4</span>
-            </div>
-            <div class="bg-white rounded-lg py-1 border border-slate-200/80 mb-2.5 shadow-inner">
-              <span class="font-black text-lg text-indigo-900" id="val-quizzes">0.0</span>
-              <span class="text-[10px] text-slate-400">/ 4</span>
-            </div>
-            <div class="grid grid-cols-2 gap-1.5">
-              <button onclick="adjustScore('quizzes', -0.5, 4)" class="h-8 rounded-lg bg-white hover:bg-slate-200 text-slate-700 font-black text-sm flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">－</button>
-              <button onclick="adjustScore('quizzes', +0.5, 4)" class="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">＋</button>
-            </div>
+      <!-- شبكة المعايير -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+        <!-- حضور (3) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">الحضور والمواظبة (3)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_presence">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('presence', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('presence', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
           </div>
         </div>
 
-        <!-- ملاحظة الأستاذ -->
-        <div class="pt-2">
-          <label class="block text-xs font-bold text-slate-700 mb-1">الملاحظة التوجيهية للتلميذ:</label>
-          <input type="text" id="input-note" placeholder="مثال: تلميذ منضبط، مشاركة فعالة في الأنشطة..." 
-            class="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-sm transition">
+        <!-- انضباط (3) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">السلوك والانضباط (3)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_discipline">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('discipline', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('discipline', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
+          </div>
         </div>
 
+        <!-- كراس (3) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">العناية بالكراس (3)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_notebook">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('notebook', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('notebook', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
+          </div>
+        </div>
+
+        <!-- واجبات (3) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">الواجبات والأنشطة (3)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_homework">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('homework', -0.5, 3)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('homework', +0.5, 3)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
+          </div>
+        </div>
+
+        <!-- مشاريع (4) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">المشاريع والبحوث (4)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_projects">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('projects', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('projects', +0.5, 4)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
+          </div>
+        </div>
+
+        <!-- استجواب (4) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center flex flex-col justify-between shadow-sm">
+          <span class="text-xs font-bold text-slate-600">الاستجواب السريع (4)</span>
+          <div class="text-2xl font-black text-slate-800 my-1" id="score_quizzes">0</div>
+          <div class="flex justify-center gap-1.5">
+            <button onclick="adjustScore('quizzes', -0.5, 4)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-black text-slate-700 hover:bg-slate-100">-</button>
+            <button onclick="adjustScore('quizzes', +0.5, 4)" class="w-8 h-8 rounded-lg bg-blue-600 text-white font-black hover:bg-blue-700">+</button>
+          </div>
+        </div>
       </div>
 
-      <!-- أسفل النافذة: أزرار الحفظ والإغلاق -->
-      <div class="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between gap-3">
-        <button onclick="closeModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-200 font-bold text-xs transition">
-          إلغاء
+      <!-- خانة الملاحظات -->
+      <div class="mb-5">
+        <label class="block text-xs font-bold text-slate-600 mb-1">الملاحظة التوجيهية:</label>
+        <input type="text" id="modalStudentNotes" placeholder="مثال: تلميذ مجتهد ومنضبط..." 
+          class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button onclick="closeEvalModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-semibold">إلغاء</button>
+        <button id="saveBtnModal" onclick="saveStudentEvaluation()" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md transition flex items-center gap-1.5">
+          <span>💾 حفظ ومزامنة</span>
         </button>
-        <button onclick="saveStudentEvaluation()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-indigo-200 flex items-center gap-1.5 transition">
-          <span>💾 حفظ النقاط في Drive</span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ============================================================== -->
-  <!-- المرحلة 3 مكرر: نافذة التقييم الجماعي للمحددين (Bulk Evaluation Modal) -->
-  <!-- ============================================================== -->
-  <div id="bulkModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in flex flex-col max-h-[92vh]">
-      
-      <!-- رأس نافذة التقييم الجماعي -->
-      <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-4 sm:p-5 flex justify-between items-start">
-        <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <span class="bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 text-xs px-2.5 py-0.5 rounded-full font-bold" id="bulkModalCountBadge">
-              0 تلاميذ محددين
-            </span>
-            <span class="text-xs text-slate-300" id="bulkModalGroup">الفوج المحدد</span>
-          </div>
-          <h3 class="text-lg sm:text-xl font-black text-white">التقييم الجماعي المتزامن</h3>
-          <p class="text-[11px] sm:text-xs text-slate-300">الضغط على (+) أو (-) سيعدل نقطة كل تلميذ محدد مع احترام الحدود الدنيا والقصوى</p>
-        </div>
-        <button onclick="closeBulkModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold transition text-sm">
-          ✕
-        </button>
-      </div>
-
-      <!-- معاينة سريعة لأسماء التلاميذ المحددين -->
-      <div class="bg-slate-50 border-b border-slate-200 px-5 py-2.5 flex items-center gap-2 overflow-x-auto text-xs">
-        <span class="font-bold text-slate-500 whitespace-nowrap">المحددون:</span>
-        <div id="bulkSelectedNamesChips" class="flex items-center gap-1.5 flex-nowrap overflow-x-auto py-1">
-          <!-- أسماء التلاميذ كبطاقات صغيرة -->
-        </div>
-      </div>
-
-      <!-- لوحة التحكم الجماعية: معايير التقويم الستة جنباً إلى جنب -->
-      <div class="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
-          
-          <!-- 1. الحضور والمواظبة -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الحضور والمواظبة</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 3</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('presence', -0.5, 3)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('presence', +0.5, 3)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. السلوك والانضباط -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">السلوك والانضباط</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 3</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('discipline', -0.5, 3)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('discipline', +0.5, 3)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-          <!-- 3. العناية بالكراس -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">العناية بالكراس</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 3</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('notebook', -0.5, 3)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('notebook', +0.5, 3)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-          <!-- 4. الواجبات والتمارين -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الواجبات والتمارين</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 3</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('homework', -0.5, 3)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('homework', +0.5, 3)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-          <!-- 5. المشاريع والبحوث -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">المشاريع والبحوث</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 4</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('projects', -0.5, 4)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('projects', +0.5, 4)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-          <!-- 6. الاستجواب السريع -->
-          <div class="bg-gradient-to-b from-slate-50 to-slate-100/70 p-3.5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between text-center">
-            <div class="mb-2">
-              <span class="font-bold text-slate-800 text-xs block">الاستجواب السريع</span>
-              <span class="text-[10px] text-slate-400 font-semibold">الحد الأقصى: 4</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <button onclick="applyBulkDelta('quizzes', -0.5, 4)" class="flex-1 h-9 rounded-xl bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-700 font-black text-xs flex items-center justify-center border border-slate-300 shadow-sm transition active:scale-95">
-                － 0.5
-              </button>
-              <button onclick="applyBulkDelta('quizzes', +0.5, 4)" class="flex-1 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs flex items-center justify-center shadow-sm shadow-indigo-100 transition active:scale-95">
-                ＋ 0.5
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- إضافة ملاحظة جماعية اختيارية -->
-        <div class="pt-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
-          <label class="block text-xs font-bold text-slate-700 mb-1">إلحاق ملاحظة موحدة لجميع التلاميذ المحددين (اختياري):</label>
-          <div class="flex gap-2">
-            <input type="text" id="bulkNoteInput" placeholder="مثال: تسليم المشروع في الآجال، مشاركة جماعية ممتازة..." 
-              class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-600 focus:outline-none shadow-sm transition">
-            <button onclick="applyBulkNote()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition">
-              تطبيق الملاحظة
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- أسفل نافذة التقييم الجماعي -->
-      <div class="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between gap-3">
-        <button onclick="closeBulkModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-200 font-bold text-xs transition">
-          إغلاق
-        </button>
-        <button onclick="confirmAndSyncBulkEvaluation()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-emerald-200 flex items-center gap-1.5 transition">
-          <span>✓ تأكيد ومزامنة الكل في Drive</span>
-        </button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ============================================== -->
-  <!-- كشف التقويم المستمر الرسمي (الخاص بالمفتش) -->
-  <!-- ============================================== -->
-  <div id="inspectorReportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden fade-in flex flex-col max-h-[95vh]">
-      
-      <!-- أزرار الإجراءات العلوية (تختفي أثناء الطباعة) -->
-      <div class="no-print bg-slate-900 text-white p-3.5 sm:px-6 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-base sm:text-lg">📋</span>
-          <div>
-            <h4 class="text-xs sm:text-sm font-bold text-white">معاينة كشف التقويم المستمر للمفتش التربوي</h4>
-            <p class="text-[11px] text-slate-400">جاهز للتصدير، المعاينة أو الطباعة المباشرة على ورقة A4</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
-            <span>🖨️ طباعة الكشف</span>
-          </button>
-          <button onclick="closeInspectorReport()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm transition">
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <!-- محتوى الكشف الرسمي القابل للطباعة -->
-      <div class="p-6 sm:p-8 overflow-y-auto space-y-6 text-slate-900 bg-white">
-        
-        <!-- الترويسة الرسمية -->
-        <div class="border-b-2 border-slate-900 pb-4 text-center space-y-2">
-          <div class="flex justify-between items-start text-[11px] font-bold text-slate-600">
-            <div class="text-right space-y-1">
-              <p>الجمهورية الجزائرية الديمقراطية الشعبية</p>
-              <p>وزارة التربية الوطنية</p>
-              <p>مديرية التربية لولاية: .........................</p>
-              <p>المؤسسة: .......................................</p>
-            </div>
-            <div class="text-left space-y-1">
-              <p>الموسم الدراسي: 20... / 20...</p>
-              <p>المادة: العلوم الفيزيائية والتكنولوجيا</p>
-              <p>الأستاذ: حواش زكرياء</p>
-              <p>التاريخ: ...... / ...... / 20...</p>
-            </div>
-          </div>
-
-          <div class="pt-2">
-            <h2 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 underline underline-offset-8">
-              كشف نقاط التقويم المستمر الإجمالي
-            </h2>
-            <div class="flex items-center justify-center gap-4 text-xs font-bold text-indigo-900 mt-2">
-              <span class="bg-slate-100 px-3 py-1 rounded-md border border-slate-300" id="reportGroupTitle">الفوج: فوج 01</span>
-              <span class="bg-slate-100 px-3 py-1 rounded-md border border-slate-300" id="reportGroupGrade">المستوى: 1م1</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- جدول الأسماء والنقاط الإجمالية الموجه للمفتش مرتب أبجدياً -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-right border-collapse border border-slate-400 text-xs sm:text-sm">
-            <thead class="bg-slate-100 text-slate-800 text-xs font-extrabold uppercase">
-              <tr>
-                <th class="border border-slate-400 p-2.5 text-center w-12">الرقم</th>
-                <th class="border border-slate-400 p-2.5">اللقب والاسم (مرتّب أبجدياً)</th>
-                <th class="border border-slate-400 p-2.5 text-center w-36">نقطة التقويم المستمر (/20)</th>
-                <th class="border border-slate-400 p-2.5 text-center w-32">التقدير التربوي</th>
-                <th class="border border-slate-400 p-2.5">ملاحظات توجيهية</th>
-              </tr>
-            </thead>
-            <tbody id="inspectorReportTableBody">
-              <!-- سيتم توليد الصفوف عبر الجافاسكريبت -->
-            </tbody>
-            <tfoot class="bg-slate-50 font-bold text-xs">
-              <tr>
-                <td colspan="2" class="border border-slate-400 p-2 text-center">إحصائيات الفوج</td>
-                <td class="border border-slate-400 p-2 text-center text-indigo-900" id="reportTableAvg">المعدل: 0.00</td>
-                <td colspan="2" class="border border-slate-400 p-2 text-center text-emerald-800" id="reportTablePass">نسبة النجاح: 0%</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <!-- توقيعات الأستاذ والإدارة والمفتش -->
-        <div class="pt-6 grid grid-cols-3 text-center text-xs font-bold text-slate-700">
-          <div>
-            <p class="mb-12">توقيع وإمضاء الأستاذ</p>
-            <p class="text-slate-900">الأستاذ: حواش زكرياء</p>
-          </div>
-          <div>
-            <p class="mb-12">تأشيرة مدير المؤسسة</p>
-            <p class="text-slate-400">.......................</p>
-          </div>
-          <div>
-            <p class="mb-12">ملاحظات وتأشيرة المفتش</p>
-            <p class="text-slate-400">.......................</p>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
-  <!-- نافذة إعدادات ربط Google Drive (Apps Script URL) -->
-  <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden fade-in flex flex-col">
-      <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <span class="text-xl">⚙️</span>
-          <h3 class="font-bold text-sm sm:text-base">إعدادات الربط مع Google Drive</h3>
-        </div>
-        <button onclick="closeConfigModal()" class="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-xs">✕</button>
-      </div>
-      
-      <div class="p-5 space-y-4 text-xs sm:text-sm text-slate-700">
-        <p class="leading-relaxed text-slate-600">
-          الصق هنا <strong>رابط تطبيق الويب (Web App URL)</strong> الذي نسخته من Google Apps Script (الذي ينتهي بـ <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-600">/exec</code>):
-        </p>
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block font-bold text-slate-800">رابط Google Apps Script:</label>
-            <div class="flex gap-2">
-              <button type="button" onclick="pasteFromClipboard()" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 transition">
-                📋 لصق من الحافظة
-              </button>
-              <button type="button" onclick="clearScriptInput()" class="text-[11px] font-bold text-slate-400 hover:text-rose-600 transition">
-                مسح
-              </button>
-            </div>
-          </div>
-          <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" 
-            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-left font-mono focus:ring-2 focus:ring-indigo-600 focus:outline-none focus:bg-white transition" dir="ltr">
-        </div>
-        
-        <div id="connectionErrorBanner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs space-y-1">
-          <p class="font-bold flex items-center gap-1.5">
-            <span>⚠️ تعذر الاتصال بـ Google Apps Script:</span>
-          </p>
-          <ul class="list-disc list-inside space-y-0.5 text-[11px] text-rose-700">
-            <li>تأكد أن الرابط ينتهي بـ <strong class="font-mono">/exec</strong> وليس <span class="font-mono">/edit</span>.</li>
-            <li>في خيارات النشر (Deploy) بـ Apps Script، تأكد أن خيار <strong>Who has access</strong> هو <strong>Anyone</strong>.</li>
-            <li>تأكد من الموافقة على صلاحيات الأذونات (Authorize Access).</li>
-          </ul>
-        </div>
-
-        <div class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-xs space-y-1">
-          <p class="font-bold">💡 ملاحظة:</p>
-          <p>إذا تركت الخانة فارغة، ستستمر المنصة بالعمل بالبيانات النموذجية للأفواج الـ 11.</p>
-        </div>
-      </div>
-
-      <div class="bg-slate-50 border-t border-slate-200 p-3.5 flex justify-between items-center gap-2">
-        <button onclick="resetToMockData()" class="px-3 py-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-200 text-xs font-bold transition">
-          العودة للوضع النموذجي
-        </button>
+  <!-- نافذة كشف التقويم الرسمي (للمفتش) -->
+  <div id="inspectorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl">
+      <div class="flex justify-between items-center mb-6 no-print">
+        <h3 class="text-lg font-bold text-slate-800">معاينة كشف التقويم الرسمي</h3>
         <div class="flex gap-2">
-          <button onclick="closeConfigModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-200 transition">إلغاء</button>
-          <button onclick="saveConfigUrl()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition">حفظ الرابط والاتصال</button>
+          <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm">🖨️ طباعة الكشف (A4)</button>
+          <button onclick="closeInspectorModal()" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl text-sm font-bold text-slate-600">إغلاق</button>
+        </div>
+      </div>
+
+      <div id="printableArea" class="border border-slate-300 p-8 rounded-xl bg-white text-slate-900">
+        <div class="text-center pb-4 mb-4 border-b-2 border-slate-800">
+          <h4 class="text-sm font-bold">الجمهورية الجزائرية الديمقراطية الشعبية</h4>
+          <h5 class="text-xs text-slate-600">وزارة التربية الوطنية</h5>
+          <h3 class="text-xl font-black mt-2">كشف نقاط التقويم المستمر الرسمي</h3>
+          <div class="flex justify-between text-xs font-semibold mt-4 px-2 text-slate-700">
+            <span>الأستاذ: <strong>حواش زكرياء</strong></span>
+            <span id="reportGroupTitle" class="font-bold text-blue-700">الفوج: --</span>
+            <span>الموسم الدراسي: 20... / 20...</span>
+          </div>
+        </div>
+
+        <table class="w-full text-center border-collapse border border-slate-300 text-xs mb-6">
+          <thead class="bg-slate-100 font-bold">
+            <tr>
+              <th class="border border-slate-300 p-2 w-12">الرقم</th>
+              <th class="border border-slate-300 p-2 text-right">اللقب والاسم (مرتّب أبجدياً)</th>
+              <th class="border border-slate-300 p-2 w-28">علامة التقويم (/20)</th>
+              <th class="border border-slate-300 p-2 w-28">التقدير التربوي</th>
+              <th class="border border-slate-300 p-2">الملاحظة والتوجيه</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+
+        <div class="grid grid-cols-3 text-center text-xs font-bold pt-8 mt-6 border-t border-slate-200">
+          <div>توقيع الأستاذ:<br><span class="font-medium text-slate-600 mt-2 block">حواش زكرياء</span></div>
+          <div>ختم وتأشيرة الإدارة:<br><span class="font-medium text-slate-400 mt-2 block">(..................)</span></div>
+          <div>تأشيرة السيد المفتش التربوي:<br><span class="font-medium text-slate-400 mt-2 block">(..................)</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- إشعار عائم -->
-  <div id="toastNotification" class="fixed bottom-6 left-6 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 transform translate-y-24 opacity-0 transition duration-300 z-50">
-    <span class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-xs text-white">✓</span>
-    <span class="text-xs font-bold" id="toastMessage">تم الحفظ بنجاح</span>
+  <!-- نافذة إعدادات الرابط -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">⚙️ إعدادات ربط Google Drive</h3>
+      <p class="text-xs text-slate-500 mb-4">ألصق رابط Google Apps Script المنتهي بـ <code class="bg-slate-100 text-blue-600 px-1 py-0.5 rounded">/exec</code> للمزامنة المباشرة:</p>
+      
+      <div class="flex gap-2 mb-3">
+        <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+          class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        <button onclick="pasteFromClipboard()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+          📋 لصق
+        </button>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-semibold">إلغاء</button>
+        <button onclick="saveScriptUrl()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">حفظ الرابط</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    let SCRIPT_URL = localStorage.getItem("gdrive_script_url") || "";
+    const defaultGroups = [
+      { id: "1م1", name: "1 متوسط 1", level: "1م", room: "قاعة 01" },
+      { id: "1م2", name: "1 متوسط 2", level: "1م", room: "قاعة 02" },
+      { id: "1م3", name: "1 متوسط 3", level: "1م", room: "قاعة 03" },
+      { id: "2م1", name: "2 متوسط 1", level: "2م", room: "قاعة 04" },
+      { id: "2م2", name: "2 متوسط 2", level: "2م", room: "قاعة 05" },
+      { id: "2م3", name: "2 متوسط 3", level: "2م", room: "قاعة 06" },
+      { id: "3م1", name: "3 متوسط 1", level: "3م", room: "قاعة 07" },
+      { id: "3م2", name: "3 متوسط 2", level: "3م", room: "قاعة 08" },
+      { id: "3م3", name: "3 متوسط 3", level: "3م", room: "قاعة 09" },
+      { id: "4م1", name: "4 متوسط 1", level: "4م", room: "قاعة 10" },
+      { id: "4م2", name: "4 متوسط 2", level: "4م", room: "قاعة 11" }
+    ];
 
-    // دالة توليد عينات تلاميذ مرتبين أبجدياً لكل فوج
-    function generateMockStudents(count, grpName) {
-      const arabicNames = [
-        "إبراهيم خليل عمارة", "أحمد بلقاسم", "أحمد بن عيسى", "أيوب شريفي", "إيناس منصوري",
-        "بلال لعريبي", "حمزة قدور", "خالد بوزيد", "ريان رحماني", "سارة بن ناصر",
-        "صهيب حماني", "عبد الرحمن مزيان", "فاطمة بوعزيز", "مريم قروي", "محمد بن سالم",
-        "مهدي بوعلام", "هدى طاهري", "ياسين زروقي", "يوسف براهيمي", "يونس جودي"
-      ];
-      
-      const list = [];
-      const usedNames = [...arabicNames].sort((a, b) => a.localeCompare(b, 'ar'));
-      const limit = Math.min(count, usedNames.length);
+    let studentsData = JSON.parse(localStorage.getItem("studentsData_live")) || [];
+    let currentSelectedGroup = null;
+    let currentStudent = null;
+    let currentFilterLevel = "all";
 
-      for (let i = 0; i < limit; i++) {
-        list.push({
-          id: String(i + 1).padStart(2, '0'),
-          name: usedNames[i],
-          scores: {
-            presence: +(Math.random() * 1 + 2).toFixed(1),
-            discipline: +(Math.random() * 1 + 2).toFixed(1),
-            notebook: +(Math.random() * 1 + 2).toFixed(1),
-            homework: +(Math.random() * 1 + 2).toFixed(1),
-            projects: +(Math.random() * 1.5 + 2.5).toFixed(1),
-            quizzes: +(Math.random() * 1.5 + 2.5).toFixed(1)
-          },
-          note: i % 4 === 0 ? "مشاركة منتظمة" : (i % 5 === 0 ? "تلميذ هادئ ومواظب" : "")
-        });
-      }
-      return list;
+    function showToast(msg) {
+      const toast = document.getElementById("syncToast");
+      const text = document.getElementById("syncToastMsg");
+      text.textContent = msg;
+      toast.classList.remove("opacity-0", "pointer-events-none");
+      setTimeout(() => toast.classList.add("opacity-0", "pointer-events-none"), 3000);
     }
 
-    // قاعدة بيانات الأفواج الـ 11
-    let database = {
-      "فوج 1م1": { name: "فوج 1م1", level: "1م", grade: "السنة الأولى متوسط (1م1)", room: "قاعة 01", students: generateMockStudents(18, "1م1") },
-      "فوج 1م2": { name: "فوج 1م2", level: "1م", grade: "السنة الأولى متوسط (1م2)", room: "قاعة 02", students: generateMockStudents(19, "1م2") },
-      "فوج 1م3": { name: "فوج 1م3", level: "1م", grade: "السنة الأولى متوسط (1م3)", room: "قاعة 03", students: generateMockStudents(17, "1م3") },
-      
-      "فوج 2م1": { name: "فوج 2م1", level: "2م", grade: "السنة الثانية متوسط (2م1)", room: "قاعة 05", students: generateMockStudents(18, "2م1") },
-      "فوج 2م2": { name: "فوج 2م2", level: "2م", grade: "السنة الثانية متوسط (2م2)", room: "قاعة 06", students: generateMockStudents(20, "2م2") },
-      "فوج 2م3": { name: "فوج 2م3", level: "2م", grade: "السنة الثانية متوسط (2م3)", room: "قاعة 07", students: generateMockStudents(18, "2م3") },
-      
-      "فوج 3م1": { name: "فوج 3م1", level: "3م", grade: "السنة الثالثة متوسط (3م1)", room: "مخبر 01", students: generateMockStudents(19, "3م1") },
-      "فوج 3م2": { name: "فوج 3م2", level: "3م", grade: "السنة الثالثة متوسط (3م2)", room: "مخبر 02", students: generateMockStudents(18, "3م2") },
-      "فوج 3م3": { name: "فوج 3م3", level: "3م", grade: "السنة الثالثة متوسط (3م3)", room: "قاعة 09", students: generateMockStudents(17, "3م3") },
-      
-      "فوج 4م1": { name: "فوج 4م1", level: "4م", grade: "السنة الرابعة متوسط (4م1)", room: "قاعة 11", students: generateMockStudents(20, "4م1") },
-      "فوج 4م2": { name: "فوج 4م2", level: "4م", grade: "السنة الرابعة متوسط (4م2)", room: "قاعة 12", students: generateMockStudents(19, "4م2") }
+    function sortStudentsAlphabetically(arr) {
+      return arr.sort((a, b) => {
+        const groupCmp = (a.group || "").localeCompare(b.group || "", 'ar');
+        if (groupCmp !== 0) return groupCmp;
+        return (a.name || "").localeCompare(b.name || "", 'ar');
+      });
+    }
+
+    // تهيئة التطبيق وجلب أحدث البيانات فوراً عند الفتح
+    window.onload = async function() {
+      const savedUrl = localStorage.getItem("googleScriptUrl");
+      if (savedUrl) {
+        document.getElementById("scriptUrlInput").value = savedUrl;
+        document.getElementById("connectionText").textContent = "متصل سحابياً بـ Drive";
+        await refreshData(false); // جلب البيانات الحية مباشرة من Google Sheets
+      } else {
+        renderGroups();
+      }
+
+      // مزامنة تلقائية هادئة في الخلفية كل 25 ثانية لجلب أي تعديل من هاتف/كمبيوتر آخر
+      setInterval(() => {
+        if (!document.getElementById("evalModal").classList.contains("hidden")) return; // عدم المقاطعة إذا كنت تعدل
+        refreshData(false, true);
+      }, 25000);
     };
 
-    let currentActiveGroupKey = null;
-    let currentEditingStudentIndex = null;
-    let tempStudentScores = {};
-    let activeLevelFilter = "all";
-    let selectedStudentIds = new Set(); // مجموعة معرفات التلاميذ المحددين للتقييم الجماعي
+    // دالة الجلب والتحديث المباشر من Google Apps Script
+    async function refreshData(manual = true, silent = false) {
+      const icon = document.getElementById("refreshIcon");
+      const lastText = document.getElementById("lastUpdatedText");
+      if (!silent) icon.classList.add("animate-spin-fast");
 
-    function calculateTotal(scores) {
-      if (!scores) return 0;
-      return Object.values(scores).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
-    }
-
-    function getGroupStats(groupKey) {
-      if (!groupKey || !database[groupKey] || !Array.isArray(database[groupKey].students)) {
-        return { avg: "0.00", passRate: "0%" };
-      }
-      const students = database[groupKey].students;
-      if (students.length === 0) return { avg: "0.00", passRate: "0%" };
-
-      let sum = 0;
-      let passCount = 0;
-      students.forEach(st => {
-        const total = calculateTotal(st.scores);
-        sum += total;
-        if (total >= 10) passCount++;
-      });
-
-      return {
-        avg: (sum / students.length).toFixed(2),
-        passRate: Math.round((passCount / students.length) * 100) + "%"
-      };
-    }
-
-    function sortGroupStudentsAlphabetically(groupKey) {
-      if (groupKey && database[groupKey] && Array.isArray(database[groupKey].students)) {
-        database[groupKey].students.sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ar'));
-      }
-    }
-
-    function filterGroupsByLevel(level) {
-      activeLevelFilter = level;
-      ["all", "1", "2", "3", "4"].forEach(l => {
-        const btn = document.getElementById(l === "all" ? "btn-lvl-all" : `btn-lvl-${l}`);
-        if (btn) {
-          if ((level === "all" && l === "all") || (level === `${l}م`)) {
-            btn.className = "px-3 py-1.5 rounded-xl bg-indigo-600 text-white transition shadow-sm";
-          } else {
-            btn.className = "px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      const scriptUrl = localStorage.getItem("googleScriptUrl");
+      if (scriptUrl) {
+        try {
+          if (!silent && manual) showToast("جاري المزامنة مع Google Sheets...");
+          const res = await fetch(scriptUrl, { cache: "no-store" });
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            studentsData = sortStudentsAlphabetically(data);
+            localStorage.setItem("studentsData_live", JSON.stringify(studentsData));
+            if (!silent && manual) showToast("✓ تمت المزامنة بنجاح بأحدث البيانات");
           }
+        } catch (e) {
+          console.warn("تنبيه مزامنة:", e);
         }
-      });
-      renderGroupCards();
-    }
-
-    function filterGroupsSearch(query) {
-      renderGroupCards(query.trim().toLowerCase());
-    }
-
-    function renderGroupCards(searchQuery = "") {
-      const container = document.getElementById("groupsContainer");
-      container.innerHTML = "";
-
-      const keys = Object.keys(database).filter(groupKey => {
-        const grp = database[groupKey];
-        const matchesLevel = (activeLevelFilter === "all") || (grp.level === activeLevelFilter);
-        const matchesSearch = !searchQuery || 
-                              grp.name.toLowerCase().includes(searchQuery) || 
-                              grp.grade.toLowerCase().includes(searchQuery) || 
-                              grp.room.toLowerCase().includes(searchQuery);
-        return matchesLevel && matchesSearch;
-      });
-
-      if (keys.length === 0) {
-        container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 text-sm">لا يوجد فوج يطابق معايير التصفية.</div>`;
-        return;
       }
 
-      keys.forEach(groupKey => {
-        const grp = database[groupKey];
-        if (!grp) return;
-        const stats = getGroupStats(groupKey);
+      if (!silent) icon.classList.remove("animate-spin-fast");
+      const now = new Date();
+      lastText.textContent = `آخر مزامنة سحابية: ${now.toLocaleTimeString('ar-DZ')}`;
+      renderGroups();
+      if (currentSelectedGroup) renderStudentsList(currentSelectedGroup);
+    }
 
-        const card = document.createElement("div");
-        card.className = "bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between group";
-        card.onclick = () => selectGroup(groupKey);
+    function renderGroups() {
+      const grid = document.getElementById("groupsGrid");
+      grid.innerHTML = "";
 
-        card.innerHTML = `
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-black px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition">
-                ${grp.name}
-              </span>
-              <span class="text-[11px] text-slate-400 font-medium">📍 ${grp.room}</span>
-            </div>
-            <div>
-              <h3 class="text-sm sm:text-base font-extrabold text-slate-800 group-hover:text-indigo-600 transition leading-snug">${grp.grade}</h3>
-              <p class="text-xs text-slate-400 mt-0.5">${grp.students.length} تلميذ (مرتّب أبجدياً)</p>
-            </div>
-          </div>
+      const filtered = currentFilterLevel === "all" 
+        ? defaultGroups 
+        : defaultGroups.filter(g => g.level === currentFilterLevel);
 
-          <div class="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-            <div>
-              <span class="text-slate-400 block text-[10px]">معدل الفوج</span>
-              <span class="font-black text-slate-800">${stats.avg} <span class="text-[10px] text-slate-400">/ 20</span></span>
+      filtered.forEach(g => {
+        const groupStudents = studentsData.filter(s => s.group === g.id);
+        const count = groupStudents.length;
+        const avg = count > 0 
+          ? (groupStudents.reduce((a, b) => a + (b.total || 0), 0) / count).toFixed(2)
+          : "0.00";
+
+        grid.innerHTML += `
+          <div onclick="selectGroup('${g.id}', '${g.name}')" 
+            class="bg-white hover:border-blue-500 hover:shadow-md cursor-pointer border border-slate-200 rounded-2xl p-4 transition-all">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 rounded-lg">${g.room}</span>
+              <span class="text-xs text-slate-400 font-semibold">${count} تلميذ</span>
             </div>
-            <div class="flex items-center gap-1 text-indigo-600 font-bold group-hover:translate-x-[-4px] transition text-xs">
-              <span>القائمة</span>
-              <span>←</span>
+            <h3 class="text-lg font-bold text-slate-800">${g.name}</h3>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+              <span class="text-slate-500">معدل الفوج:</span>
+              <span class="font-bold text-blue-600">${avg} / 20</span>
             </div>
           </div>
         `;
-        container.appendChild(card);
       });
     }
 
-    function selectGroup(groupKey) {
-      if (!groupKey || !database[groupKey]) return;
-      currentActiveGroupKey = groupKey;
-      sortGroupStudentsAlphabetically(groupKey);
-      const grp = database[groupKey];
-
-      document.getElementById("currentGroupTitle").innerText = grp.grade || grp.name || groupKey;
-      const count = Array.isArray(grp.students) ? grp.students.length : 0;
-      document.getElementById("currentGroupCount").innerText = `${count} تلميذ`;
-
-      const stats = getGroupStats(groupKey);
-      document.getElementById("groupAvgBadge").innerText = stats.avg;
-      document.getElementById("groupPassBadge").innerText = stats.passRate;
-
-      document.getElementById("breadcrumb-sep").classList.remove("hidden");
-      const bcGroup = document.getElementById("breadcrumb-group");
-      bcGroup.innerText = grp.name || groupKey;
-      bcGroup.classList.remove("hidden");
-
-      selectedStudentIds.clear();
-      updateBulkActionBar();
-
-      renderStudentsTable(grp.students || []);
-      goToStep(2);
+    function selectGroup(groupId, groupName) {
+      currentSelectedGroup = groupId;
+      document.getElementById("groupsView").classList.add("hidden");
+      document.getElementById("studentsView").classList.remove("hidden");
+      document.getElementById("currentGroupName").textContent = `قائمة: ${groupName}`;
+      renderStudentsList(groupId);
     }
 
-    function renderStudentsTable(students) {
+    function showGroupsView() {
+      document.getElementById("studentsView").classList.add("hidden");
+      document.getElementById("groupsView").classList.remove("hidden");
+      renderGroups();
+    }
+
+    function filterGroups(level) {
+      currentFilterLevel = level;
+      document.querySelectorAll(".level-tab").forEach(tab => {
+        tab.classList.remove("bg-blue-600", "text-white");
+        tab.classList.add("text-slate-700");
+      });
+      event.target.classList.add("bg-blue-600", "text-white");
+      event.target.classList.remove("text-slate-700");
+      renderGroups();
+    }
+
+    function renderStudentsList(groupId) {
       const tbody = document.getElementById("studentsTableBody");
-      const noMsg = document.getElementById("noStudentsMsg");
+      tbody.innerHTML = "";
+      
+      const students = studentsData
+        .filter(s => s.group === groupId)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ar'));
+
+      document.getElementById("groupStudentCount").textContent = `عدد التلاميذ: ${students.length} (مرتبون أبجدياً)`;
+
+      if (students.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">لا يوجد تلاميذ مسجلين بهذا الفوج. تأكد من مزامنة Google Sheets.</td></tr>`;
+        return;
+      }
+
+      students.forEach((st, idx) => {
+        let tagColor = "bg-amber-50 text-amber-700 border-amber-200";
+        let tagText = "متوسط";
+        if (st.total >= 16) { tagColor = "bg-emerald-50 text-emerald-700 border-emerald-200"; tagText = "ممتاز"; }
+        else if (st.total >= 14) { tagColor = "bg-blue-50 text-blue-700 border-blue-200"; tagText = "جيد جداً"; }
+        else if (st.total >= 10) { tagColor = "bg-teal-50 text-teal-700 border-teal-200"; tagText = "مقبول"; }
+        else if (st.total > 0) { tagColor = "bg-rose-50 text-rose-700 border-rose-200"; tagText = "دون المتوسط"; }
+
+        const serialNum = String(idx + 1).padStart(2, '0');
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 text-center font-bold text-slate-500">${serialNum}</td>
+            <td class="p-3 font-bold text-slate-800">${st.name}</td>
+            <td class="p-3 text-center font-black text-blue-600">${(st.total || 0).toFixed(2)}</td>
+            <td class="p-3 text-center">
+              <span class="text-xs px-2.5 py-1 rounded-full border ${tagColor} font-semibold">${tagText}</span>
+            </td>
+            <td class="p-3 text-center text-xs text-slate-500">${st.note || '-'}</td>
+            <td class="p-3 text-center">
+              <button onclick="openEvalModal('${st.group}', '${st.id}')" 
+                class="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 rounded-xl text-xs font-bold transition">
+                ✏️ تقييم
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function openEvalModal(group, id) {
+      currentStudent = studentsData.find(s => s.group === group && s.id === id);
+      if (!currentStudent) return;
+
+      document.getElementById("modalStudentName").textContent = currentStudent.name;
+      document.getElementById("modalStudentGroup").textContent = `الفوج: ${currentStudent.group} | الرقم: ${currentStudent.id}`;
+      document.getElementById("modalStudentNotes").value = currentStudent.note || "";
+
+      ['presence', 'discipline', 'notebook', 'homework', 'projects', 'quizzes'].forEach(field => {
+        document.getElementById(`score_${field}`).textContent = currentStudent[field] || 0;
+      });
+
+      calculateModalTotal();
+      document.getElementById("evalModal").classList.remove("hidden");
+    }
+
+    function closeEvalModal() {
+      document.getElementById("evalModal").classList.add("hidden");
+    }
+
+    function adjustScore(field, delta, max) {
+      const elem = document.getElementById(`score_${field}`);
+      let val = (parseFloat(elem.textContent) || 0) + delta;
+      if (val < 0) val = 0;
+      if (val > max) val = max;
+      elem.textContent = val;
+      calculateModalTotal();
+    }
+
+    function calculateModalTotal() {
+      let total = 0;
+      ['presence', 'discipline', 'notebook', 'homework', 'projects', 'quizzes'].forEach(f => {
+        total += parseFloat(document.getElementById(`score_${f}`).textContent) || 0;
+      });
+      document.getElementById("modalTotalScore").textContent = `${total.toFixed(2)} / 20`;
+      return total;
+    }
+
+    // حفظ فوري في Google Sheet والمزامنة اللحظية
+    async function saveStudentEvaluation() {
+      if (!currentStudent) return;
+
+      const saveBtn = document.getElementById("saveBtnModal");
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span>⏳ جاري الحفظ في Drive...</span>`;
+
+      currentStudent.presence = parseFloat(document.getElementById("score_presence").textContent) || 0;
+      currentStudent.discipline = parseFloat(document.getElementById("score_discipline").textContent) || 0;
+      currentStudent.notebook = parseFloat(document.getElementById("score_notebook").textContent) || 0;
+      currentStudent.homework = parseFloat(document.getElementById("score_homework").textContent) || 0;
+      currentStudent.projects = parseFloat(document.getElementById("score_projects").textContent) || 0;
+      currentStudent.quizzes = parseFloat(document.getElementById("score_quizzes").textContent) || 0;
+      currentStudent.total = calculateModalTotal();
+      currentStudent.note = document.getElementById("modalStudentNotes").value;
+
+      localStorage.setItem("studentsData_live", JSON.stringify(studentsData));
+
+      const scriptUrl = localStorage.getItem("googleScriptUrl");
+      if (scriptUrl) {
+        try {
+          await fetch(scriptUrl, {
+            method: "POST",
+            mode: "no-cors", // إرسال صامت فوري بدون تعليق
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(currentStudent)
+          });
+          showToast("✓ تم الحفظ في Google Sheet وتحديث السحابة");
+        } catch (err) {
+          console.log("حفظ محلي مؤقت");
+        }
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<span>💾 حفظ ومزامنة</span>`;
+      closeEvalModal();
+      renderStudentsList(currentSelectedGroup);
+    }
+
+    function openInspectorModal() {
+      const groupStudents = studentsData
+        .filter(s => s.group === currentSelectedGroup)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ar'));
+
+      document.getElementById("reportGroupTitle").textContent = `الفوج: ${currentSelectedGroup}`;
+      const tbody = document.getElementById("reportTableBody");
       tbody.innerHTML = "";
 
-      if (!Array.isArray(students) || students.length === 0) {
-        noMsg.classList.remove("hidden");
-        return;
-      }
-      noMsg.classList.add("hidden");
+      groupStudents.forEach((st, idx) => {
+        let tag = "متوسط";
+        if (st.total >= 16) tag = "ممتاز";
+        else if (st.total >= 14) tag = "جيد جداً";
+        else if (st.total >= 10) tag = "مقبول";
+        else if (st.total > 0) tag = "دون المتوسط";
 
-      // ضبط حالة مربع التحديد الرئيسي في رأس الجدول
-      const headerCb = document.getElementById("headerCheckbox");
-      if (headerCb) {
-        const allVisibleSelected = students.length > 0 && students.every(st => selectedStudentIds.has(st.id));
-        headerCb.checked = allVisibleSelected;
-      }
+        const serialNum = String(idx + 1).padStart(2, '0');
 
-      students.forEach((student, index) => {
-        const total = calculateTotal(student.scores);
-        const tr = document.createElement("tr");
-        const isSelected = selectedStudentIds.has(student.id);
-        tr.className = `${isSelected ? 'bg-indigo-50/60 font-semibold' : 'hover:bg-slate-50/80'} transition duration-150`;
-
-        const serialNumber = String(index + 1).padStart(2, '0');
-
-        tr.innerHTML = `
-          <td class="p-3.5 text-center">
-            <input type="checkbox" onchange="toggleSelectStudent('${student.id}', this.checked)" ${isSelected ? 'checked' : ''} 
-              class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
-          </td>
-          <td class="p-3.5 text-center font-bold text-slate-500">${serialNumber}</td>
-          <td class="p-3.5">
-            <button onclick="openStudentModal(${index})" class="font-bold text-slate-900 hover:text-indigo-600 text-right transition">
-              ${student.name}
-            </button>
-            ${student.note ? `<p class="text-[11px] text-slate-400 truncate max-w-xs mt-0.5">${student.note}</p>` : ''}
-          </td>
-          <td class="p-3.5 text-center hidden md:table-cell">
-            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${total >= 10 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}">
-              ${total >= 10 ? 'متحكم' : 'في طور الاكتساب'}
-            </span>
-          </td>
-          <td class="p-3.5 text-center">
-            <span class="text-sm font-black ${total >= 10 ? 'text-indigo-600' : 'text-rose-600'}">
-              ${total.toFixed(2)}
-            </span>
-            <span class="text-[10px] text-slate-400 block">من 20</span>
-          </td>
-          <td class="p-3.5 text-center">
-            <button onclick="openStudentModal(${index})" class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold text-xs transition border border-indigo-100">
-              ✏️ تنقيط
-            </button>
-          </td>
+        tbody.innerHTML += `
+          <tr>
+            <td class="border border-slate-300 p-2 font-bold">${serialNum}</td>
+            <td class="border border-slate-300 p-2 text-right font-bold">${st.name}</td>
+            <td class="border border-slate-300 p-2 font-black text-blue-700">${(st.total || 0).toFixed(2)}</td>
+            <td class="border border-slate-300 p-2 font-semibold">${tag}</td>
+            <td class="border border-slate-300 p-2 text-slate-600">${st.note || '-'}</td>
+          </tr>
         `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // دوال إدارة التحديد الجماعي
-    function toggleSelectStudent(id, isChecked) {
-      if (isChecked) {
-        selectedStudentIds.add(id);
-      } else {
-        selectedStudentIds.delete(id);
-      }
-      updateBulkActionBar();
-      renderCurrentFilteredStudents();
-    }
-
-    function toggleSelectAllFromHeader(isChecked) {
-      selectAllStudents(isChecked);
-    }
-
-    function selectAllStudents(select) {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const students = database[currentActiveGroupKey].students;
-      if (select) {
-        students.forEach(st => selectedStudentIds.add(st.id));
-      } else {
-        selectedStudentIds.clear();
-      }
-      updateBulkActionBar();
-      renderCurrentFilteredStudents();
-    }
-
-    function deselectAllStudents() {
-      selectAllStudents(false);
-    }
-
-    function updateBulkActionBar() {
-      const bar = document.getElementById("bulkActionBar");
-      const countBadge = document.getElementById("selectedCountBadge");
-      const count = selectedStudentIds.size;
-
-      if (count > 0) {
-        bar.classList.remove("hidden");
-        countBadge.innerText = `${count} تلميذ`;
-      } else {
-        bar.classList.add("hidden");
-      }
-    }
-
-    function renderCurrentFilteredStudents() {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const query = (document.getElementById("studentSearchInput")?.value || "").trim().toLowerCase();
-      const students = database[currentActiveGroupKey].students;
-      if (!query) {
-        renderStudentsTable(students);
-      } else {
-        const filtered = students.filter(st => (st.name && st.name.toLowerCase().includes(query)) || (st.id && st.id.includes(query)));
-        renderStudentsTable(filtered);
-      }
-    }
-
-    // دوال نافذة التقييم الجماعي
-    function openBulkModal() {
-      if (selectedStudentIds.size === 0) {
-        showToast("يرجى تحديد تلميذ واحد على الأقل.");
-        return;
-      }
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey]) return;
-
-      const grp = database[currentActiveGroupKey];
-      document.getElementById("bulkModalGroup").innerText = grp.grade || grp.name || currentActiveGroupKey;
-      document.getElementById("bulkModalCountBadge").innerText = `${selectedStudentIds.size} تلاميذ محددين`;
-
-      // بناء شريط أسماء المحددين
-      const chipsContainer = document.getElementById("bulkSelectedNamesChips");
-      chipsContainer.innerHTML = "";
-      
-      const selectedStudents = (grp.students || []).filter(st => selectedStudentIds.has(st.id));
-      selectedStudents.forEach(st => {
-        const chip = document.createElement("span");
-        chip.className = "bg-white border border-slate-200 text-slate-800 text-[11px] font-bold px-2 py-0.5 rounded-lg whitespace-nowrap shadow-2xs flex items-center gap-1";
-        chip.innerHTML = `${st.name} <button onclick="removeStudentFromBulk('${st.id}')" class="text-slate-400 hover:text-rose-600 font-black">×</button>`;
-        chipsContainer.appendChild(chip);
       });
 
-      document.getElementById("bulkNoteInput").value = "";
-      document.getElementById("bulkModal").classList.remove("hidden");
+      document.getElementById("inspectorModal").classList.remove("hidden");
     }
 
-    function removeStudentFromBulk(id) {
-      selectedStudentIds.delete(id);
-      updateBulkActionBar();
-      if (selectedStudentIds.size === 0) {
-        closeBulkModal();
-      } else {
-        openBulkModal();
-      }
-      renderCurrentFilteredStudents();
+    function closeInspectorModal() {
+      document.getElementById("inspectorModal").classList.add("hidden");
     }
 
-    function closeBulkModal() {
-      document.getElementById("bulkModal").classList.add("hidden");
-    }
-
-    // تطبيق زيادة أو إنقاص جماعي لمعيار محدد
-    function applyBulkDelta(criterion, delta, max) {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const students = database[currentActiveGroupKey].students;
-      let modifiedCount = 0;
-
-      students.forEach(st => {
-        if (selectedStudentIds.has(st.id)) {
-          if (!st.scores) st.scores = {};
-          let current = parseFloat(st.scores[criterion]) || 0;
-          let updated = current + delta;
-          if (updated < 0) updated = 0;
-          if (updated > max) updated = max;
-          st.scores[criterion] = parseFloat(updated.toFixed(1));
-          modifiedCount++;
-        }
-      });
-
-      // تحديث الواجهة والإحصائيات اللحظية
-      renderCurrentFilteredStudents();
-      const stats = getGroupStats(currentActiveGroupKey);
-      document.getElementById("groupAvgBadge").innerText = stats.avg;
-      document.getElementById("groupPassBadge").innerText = stats.passRate;
-
-      const sign = delta > 0 ? `+${delta}` : `${delta}`;
-      showToast(`تم تطبيق ${sign} في (${getCriteriaLabel(criterion)}) لـ ${modifiedCount} تلميذ`);
-    }
-
-    function applyBulkNote() {
-      const note = document.getElementById("bulkNoteInput").value.trim();
-      if (!note) return;
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-
-      const students = database[currentActiveGroupKey].students;
-      let count = 0;
-      students.forEach(st => {
-        if (selectedStudentIds.has(st.id)) {
-          st.note = note;
-          count++;
-        }
-      });
-
-      renderCurrentFilteredStudents();
-      showToast(`تم إلحاق الملاحظة لـ ${count} تلميذ`);
-    }
-
-    function getCriteriaLabel(crit) {
-      const labels = {
-        presence: "الحضور والمواظبة",
-        discipline: "السلوك والانضباط",
-        notebook: "العناية بالكراس",
-        homework: "الواجبات والتمارين",
-        projects: "المشاريع والبحوث",
-        quizzes: "الاستجواب السريع"
-      };
-      return labels[crit] || crit;
-    }
-
-    async function confirmAndSyncBulkEvaluation() {
-      closeBulkModal();
-      showToast(`تم حفظ وتحديث التقييم الجماعي محلياً`);
-
-      if (SCRIPT_URL && currentActiveGroupKey && database[currentActiveGroupKey] && Array.isArray(database[currentActiveGroupKey].students)) {
-        showToast("جاري إرسال التحديثات لـ Google Drive...");
-        const students = database[currentActiveGroupKey].students.filter(st => selectedStudentIds.has(st.id));
-        
-        try {
-          for (const student of students) {
-            const payload = {
-              group: currentActiveGroupKey,
-              id: student.id,
-              name: student.name,
-              presence: student.scores?.presence ?? 0,
-              discipline: student.scores?.discipline ?? 0,
-              notebook: student.scores?.notebook ?? 0,
-              homework: student.scores?.homework ?? 0,
-              projects: student.scores?.projects ?? 0,
-              quizzes: student.scores?.quizzes ?? 0,
-              note: student.note || ""
-            };
-
-            await fetch(SCRIPT_URL, {
-              method: "POST",
-              mode: "no-cors",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify(payload)
-            });
-          }
-          showToast(`✓ تم تأكيد المزامنة لجميع التلاميذ المحددين في Google Drive`);
-        } catch (err) {
-          showToast(`تم الحفظ محلياً (تعذر اتصال الخلفية)`);
-        }
-      }
-    }
-
-    function filterStudents(query) {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const cleanQuery = (query || "").trim().toLowerCase();
-      const filtered = database[currentActiveGroupKey].students.filter(st => {
-        return (st.name && st.name.toLowerCase().includes(cleanQuery)) || (st.id && st.id.includes(cleanQuery));
-      });
-      renderStudentsTable(filtered);
-    }
-
-    function openStudentModal(index) {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const student = database[currentActiveGroupKey].students[index];
-      if (!student) return;
-
-      currentEditingStudentIndex = index;
-      tempStudentScores = JSON.parse(JSON.stringify(student.scores || {}));
-
-      document.getElementById("modalStudentName").innerText = student.name;
-      document.getElementById("modalStudentNumber").innerText = `رقم ${String(index + 1).padStart(2, '0')}`;
-      document.getElementById("modalStudentGroup").innerText = database[currentActiveGroupKey].name || currentActiveGroupKey;
-      document.getElementById("input-note").value = student.note || "";
-
-      updateModalDisplay();
-      document.getElementById("studentModal").classList.remove("hidden");
-    }
-
-    function adjustScore(criterion, delta, max) {
-      let current = parseFloat(tempStudentScores[criterion]) || 0;
-      let updated = current + delta;
-
-      if (updated < 0) updated = 0;
-      if (updated > max) updated = max;
-
-      tempStudentScores[criterion] = parseFloat(updated.toFixed(1));
-      updateModalDisplay();
-    }
-
-    function updateModalDisplay() {
-      Object.keys(tempStudentScores).forEach(key => {
-        const el = document.getElementById(`val-${key}`);
-        if (el) el.innerText = (tempStudentScores[key] || 0).toFixed(1);
-      });
-
-      const total = calculateTotal(tempStudentScores);
-      const totalEl = document.getElementById("modalTotalScore");
-      totalEl.innerText = total.toFixed(2);
-
-      if (total >= 10) {
-        totalEl.className = "text-2xl font-black text-indigo-700";
-      } else {
-        totalEl.className = "text-2xl font-black text-rose-600";
-      }
-    }
-
-    function closeModal() {
-      document.getElementById("studentModal").classList.add("hidden");
-    }
-
-    function openConfigModal() {
-      document.getElementById("scriptUrlInput").value = SCRIPT_URL;
-      document.getElementById("connectionErrorBanner").classList.add("hidden");
-      document.getElementById("configModal").classList.remove("hidden");
-      setTimeout(() => {
-        const input = document.getElementById("scriptUrlInput");
-        if (input) {
-          input.focus();
-          input.select();
-        }
-      }, 100);
+    function openSettingsModal() { document.getElementById("settingsModal").classList.remove("hidden"); }
+    function closeSettingsModal() { document.getElementById("settingsModal").classList.add("hidden"); }
+    function saveScriptUrl() {
+      const url = document.getElementById("scriptUrlInput").value.trim();
+      localStorage.setItem("googleScriptUrl", url);
+      closeSettingsModal();
+      refreshData(true);
     }
 
     async function pasteFromClipboard() {
       try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-          const text = await navigator.clipboard.readText();
-          if (text) {
-            document.getElementById("scriptUrlInput").value = text.trim();
-            showToast("تم لصق الرابط بنجاح!");
-            return;
-          }
-        }
-      } catch (err) {}
-      const input = document.getElementById("scriptUrlInput");
-      if (input) {
-        input.focus();
-        input.select();
-      }
-      showToast("اضغط Ctrl+V للصق الرابط");
-    }
-
-    function clearScriptInput() {
-      const input = document.getElementById("scriptUrlInput");
-      if (input) {
-        input.value = "";
-        input.focus();
+        const text = await navigator.clipboard.readText();
+        document.getElementById("scriptUrlInput").value = text;
+      } catch (err) {
+        alert("يرجى لصق الرابط يدوياً");
       }
     }
-
-    function closeConfigModal() {
-      document.getElementById("configModal").classList.add("hidden");
-    }
-
-    function resetToMockData() {
-      SCRIPT_URL = "";
-      localStorage.removeItem("gdrive_script_url");
-      const input = document.getElementById("scriptUrlInput");
-      if (input) input.value = "";
-      updateSyncBadge(false, "وضع نموذجي (محلي)");
-      closeConfigModal();
-      showToast("تم التحويل للوضع النموذجي");
-      renderGroupCards();
-    }
-
-    async function saveConfigUrl() {
-      const inputVal = (document.getElementById("scriptUrlInput")?.value || "").trim();
-      document.getElementById("connectionErrorBanner").classList.add("hidden");
-      
-      if (inputVal && !inputVal.includes("script.google.com")) {
-        showToast("الرابط المدخل ليس رابط Google Apps Script صالح.");
-        return;
-      }
-
-      if (inputVal && inputVal.endsWith("/edit")) {
-        showToast("تنبيه: الرابط ينتهي بـ /edit، يجب أن يكون رابط النشر المنتهي بـ /exec");
-        document.getElementById("connectionErrorBanner").classList.remove("hidden");
-        return;
-      }
-
-      SCRIPT_URL = inputVal;
-      localStorage.setItem("gdrive_script_url", SCRIPT_URL);
-
-      if (SCRIPT_URL) {
-        showToast("جاري الاتصال بـ Google Sheets وجلب البيانات...");
-        const success = await syncFromGoogleSheets();
-        if (success) {
-          closeConfigModal();
-        } else {
-          document.getElementById("connectionErrorBanner").classList.remove("hidden");
-        }
-      } else {
-        closeConfigModal();
-        updateSyncBadge(false, "وضع نموذجي");
-        showToast("تم التحويل للوضع النموذجي المحلي.");
-      }
-    }
-
-    function updateSyncBadge(isConnected, customText) {
-      const badge = document.getElementById("driveStatusBadge");
-      const text = document.getElementById("statusText");
-      const pulse = document.getElementById("statusPulse");
-      if (!badge || !text || !pulse) return;
-
-      if (isConnected) {
-        badge.className = "hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-emerald-100";
-        pulse.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-        text.innerText = customText || "متصل بـ Drive";
-      } else {
-        badge.className = "hidden sm:flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold border border-amber-100";
-        pulse.className = "w-2 h-2 rounded-full bg-amber-500";
-        text.innerText = customText || "وضع نموذجي (محلي)";
-      }
-    }
-
-    // دالة التحديث والمزامنة
-    async function refreshData() {
-      const icon = document.getElementById("refreshIcon");
-      if (icon) icon.classList.add("animate-spin-fast");
-      showToast("جاري تحديث البيانات والفرز الأبجدي...");
-
-      let ok = false;
-      if (SCRIPT_URL) {
-        ok = await syncFromGoogleSheets();
-      }
-
-      setTimeout(() => {
-        if (icon) icon.classList.remove("animate-spin-fast");
-        const now = new Date();
-        const lastUpdatedEl = document.getElementById("lastUpdatedHeader");
-        if (lastUpdatedEl) {
-          lastUpdatedEl.innerText = `آخر تحديث: ${now.toLocaleTimeString('ar-DZ')} (أبجدياً)`;
-        }
-        
-        Object.keys(database).forEach(k => sortGroupStudentsAlphabetically(k));
-        renderGroupCards();
-        if (currentActiveGroupKey && database[currentActiveGroupKey] && Array.isArray(database[currentActiveGroupKey].students)) {
-          renderStudentsTable(database[currentActiveGroupKey].students);
-        }
-        if (!ok && !SCRIPT_URL) {
-          showToast("تم ترتيب وتحديث البيانات محلياً");
-        }
-      }, 500);
-    }
-
-    function fetchWithJsonp(url, timeoutMs = 7000) {
-      return new Promise((resolve, reject) => {
-        const callbackName = 'gdrive_cb_' + Date.now();
-        const script = document.createElement('script');
-        const sep = url.includes('?') ? '&' : '?';
-        script.src = `${url}${sep}callback=${callbackName}`;
-        
-        let timer = setTimeout(() => {
-          cleanup();
-          reject(new Error("Timeout"));
-        }, timeoutMs);
-
-        function cleanup() {
-          if (timer) clearTimeout(timer);
-          if (window[callbackName]) delete window[callbackName];
-          if (script.parentNode) script.parentNode.removeChild(script);
-        }
-
-        window[callbackName] = function(data) {
-          cleanup();
-          resolve(data);
-        };
-
-        script.onerror = function() {
-          cleanup();
-          reject(new Error("Script load error"));
-        };
-
-        document.body.appendChild(script);
-      });
-    }
-
-    function applyFetchedData(data) {
-      if (!Array.isArray(data) || data.length === 0) return false;
-
-      const newDb = {};
-      data.forEach(item => {
-        const grpName = item.group || "فوج عام";
-        if (!newDb[grpName]) {
-          newDb[grpName] = {
-            name: grpName,
-            level: grpName.includes("1م") ? "1م" : grpName.includes("2م") ? "2م" : grpName.includes("3م") ? "3م" : "4م",
-            grade: `قسم تربوي (${grpName})`,
-            room: "القاعة المحددة",
-            students: []
-          };
-        }
-        newDb[grpName].students.push({
-          id: String(item.id || "").padStart(2, '0'),
-          name: item.name || "تلميذ",
-          scores: {
-            presence: Number(item.presence) || 0,
-            discipline: Number(item.discipline) || 0,
-            notebook: Number(item.notebook) || 0,
-            homework: Number(item.homework) || 0,
-            projects: Number(item.projects) || 0,
-            quizzes: Number(item.quizzes) || 0
-          },
-          note: item.note || ""
-        });
-      });
-
-      // فرز أبجدي لكل فوج بعد جلبه
-      Object.keys(newDb).forEach(k => {
-        if (Array.isArray(newDb[k].students)) {
-          newDb[k].students.sort((a, b) => (a.name || "").localeCompare(b.name || "", 'ar'));
-        }
-      });
-
-      database = newDb;
-      renderGroupCards();
-      return true;
-    }
-
-    async function syncFromGoogleSheets() {
-      if (!SCRIPT_URL) {
-        updateSyncBadge(false, "وضع نموذجي (محلي)");
-        return false;
-      }
-
-      updateSyncBadge(true, "جاري المزامنة...");
-      let syncSuccess = false;
-
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: "GET",
-          redirect: "follow",
-          cache: "no-cache"
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (applyFetchedData(data)) syncSuccess = true;
-        }
-      } catch (fetchErr) {
-        try {
-          const jsonpData = await fetchWithJsonp(SCRIPT_URL, 6000);
-          if (applyFetchedData(jsonpData)) syncSuccess = true;
-        } catch (jsonpErr) {
-          syncSuccess = false;
-        }
-      }
-
-      if (syncSuccess) {
-        updateSyncBadge(true, "متصل بـ Drive");
-        showToast("تم تحديث القوائم من Google Drive بنجاح!");
-        return true;
-      } else {
-        updateSyncBadge(false, "وضع نموذجي (تعذر الربط)");
-        showToast("تعذر جلب البيانات من الرابط، تم الإبقاء على الوضع النموذجي.");
-        return false;
-      }
-    }
-
-    async function saveStudentEvaluation() {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      const student = database[currentActiveGroupKey].students[currentEditingStudentIndex];
-      if (!student) return;
-
-      const noteVal = document.getElementById("input-note")?.value || "";
-
-      student.scores = JSON.parse(JSON.stringify(tempStudentScores));
-      student.note = noteVal;
-
-      closeModal();
-      showToast(`تم حفظ نقاط التلميذ (${student.name}) محلياً`);
-
-      renderStudentsTable(database[currentActiveGroupKey].students);
-      const stats = getGroupStats(currentActiveGroupKey);
-      document.getElementById("groupAvgBadge").innerText = stats.avg;
-      document.getElementById("groupPassBadge").innerText = stats.passRate;
-
-      if (SCRIPT_URL) {
-        try {
-          const payload = {
-            group: currentActiveGroupKey,
-            id: student.id,
-            name: student.name,
-            presence: student.scores?.presence ?? 0,
-            discipline: student.scores?.discipline ?? 0,
-            notebook: student.scores?.notebook ?? 0,
-            homework: student.scores?.homework ?? 0,
-            projects: student.scores?.projects ?? 0,
-            quizzes: student.scores?.quizzes ?? 0,
-            note: student.note || ""
-          };
-
-          await fetch(SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify(payload)
-          });
-
-          showToast(`✓ تم تأكيد الحفظ في Google Drive`);
-        } catch (err) {}
-      }
-    }
-
-    function goToStep(step) {
-      const s1 = document.getElementById("step-groups");
-      const s2 = document.getElementById("step-students");
-
-      if (step === 1) {
-        s1.classList.remove("hidden");
-        s2.classList.add("hidden");
-        document.getElementById("breadcrumb-sep").classList.add("hidden");
-        document.getElementById("breadcrumb-group").classList.add("hidden");
-        currentActiveGroupKey = null;
-        renderGroupCards();
-      } else if (step === 2) {
-        s1.classList.add("hidden");
-        s2.classList.remove("hidden");
-        const searchInput = document.getElementById("studentSearchInput");
-        if (searchInput) searchInput.value = "";
-      }
-    }
-
-    function openInspectorReport() {
-      if (!currentActiveGroupKey || !database[currentActiveGroupKey] || !Array.isArray(database[currentActiveGroupKey].students)) return;
-      sortGroupStudentsAlphabetically(currentActiveGroupKey);
-      const grp = database[currentActiveGroupKey];
-      const stats = getGroupStats(currentActiveGroupKey);
-
-      document.getElementById("reportGroupTitle").innerText = `الفوج: ${grp.name || currentActiveGroupKey}`;
-      document.getElementById("reportGroupGrade").innerText = `المستوى: ${grp.grade || grp.level || '-'}`;
-
-      document.getElementById("reportTableAvg").innerText = `المعدل العام: ${stats.avg} / 20`;
-      document.getElementById("reportTablePass").innerText = `نسبة النجاح: ${stats.passRate}`;
-
-      const tbody = document.getElementById("inspectorReportTableBody");
-      tbody.innerHTML = "";
-
-      grp.students.forEach((st, idx) => {
-        const total = calculateTotal(st.scores);
-        
-        let gradeText = "ممتاز";
-        if (total < 10) gradeText = "دون المتوسط";
-        else if (total < 12) gradeText = "مقبول";
-        else if (total < 15) gradeText = "جيد";
-        else if (total < 18) gradeText = "جيد جداً";
-
-        const serialNum = String(idx + 1).padStart(2, '0');
-
-        const tr = document.createElement("tr");
-        tr.className = idx % 2 === 0 ? "bg-white" : "bg-slate-50/70";
-        tr.innerHTML = `
-          <td class="border border-slate-400 p-2 text-center font-bold text-slate-700">${serialNum}</td>
-          <td class="border border-slate-400 p-2 font-black text-slate-900">${st.name}</td>
-          <td class="border border-slate-400 p-2 text-center font-black ${total >= 10 ? 'text-slate-900' : 'text-rose-700'}">
-            ${total.toFixed(2)}
-          </td>
-          <td class="border border-slate-400 p-2 text-center font-bold text-slate-700">${gradeText}</td>
-          <td class="border border-slate-400 p-2 text-[11px] text-slate-600">${st.note || '-'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById("inspectorReportModal").classList.remove("hidden");
-    }
-
-    function closeInspectorReport() {
-      document.getElementById("inspectorReportModal").classList.add("hidden");
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById("toastNotification");
-      if (!toast) return;
-      document.getElementById("toastMessage").innerText = msg;
-      toast.classList.remove("translate-y-24", "opacity-0");
-      setTimeout(() => {
-        toast.classList.add("translate-y-24", "opacity-0");
-      }, 2500);
-    }
-
-    window.onload = function() {
-      Object.keys(database).forEach(k => sortGroupStudentsAlphabetically(k));
-      if (SCRIPT_URL) {
-        syncFromGoogleSheets();
-      } else {
-        updateSyncBadge(false, "وضع نموذجي (محلي)");
-        renderGroupCards();
-      }
-    };
   </script>
 </body>
 </html>
